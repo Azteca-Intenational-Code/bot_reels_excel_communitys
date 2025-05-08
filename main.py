@@ -1,5 +1,6 @@
+import subprocess
 from config import SessionLocal
-from sqlalchemy import text
+from sqlalchemy import text as sql_text
 from GptAPi import GPT
 from openpyxl import load_workbook
 from datetime import datetime
@@ -7,35 +8,41 @@ import shutil
 import random
 import os
 
-# === Configuración ===
+# Configuración
 plantilla_path = "Archivo de prueba reels para Niyi.xlsx"
 fecha_actual = datetime.today().strftime("%d/%m/%Y")
 reels_por_campaña = 30
 carpeta_destino = "excel_campañas"
 
-# Crear carpeta si no existe
 if not os.path.exists(carpeta_destino):
     os.makedirs(carpeta_destino)
 
-# === Conectar base de datos ===
 with SessionLocal() as session:
-    result = session.execute(text("SELECT campaign, commercial_services, residential_services, language FROM campaign"))
+    result = session.execute(sql_text("SELECT campaign, commercial_services, residential_services, language FROM campaign"))
     rows = result.fetchall()
 
-# === Generar Excel y Reels por campaña ===
 for row in rows:
     campaign_name, commercial_services, residential_services, lang = row
     campaign_key = campaign_name.lower().replace(" ", "_")
     print(f"\n📢 Procesando campaña: {campaign_name} [{campaign_key}]")
 
-    # Crear copia nueva del Excel plantilla en la carpeta destino
-    nuevo_excel = os.path.join(carpeta_destino, f"Reels_{campaign_key}.xlsx")
-    shutil.copy(plantilla_path, nuevo_excel)
-    wb = load_workbook(nuevo_excel)
-    ws = wb.active
+    excel_path = os.path.join(carpeta_destino, f"Reels_{campaign_key}.xlsx")
+    if os.path.exists(excel_path):
+        wb = load_workbook(excel_path)
+        ws = wb.active
+    else:
+        shutil.copy(plantilla_path, excel_path)
+        wb = load_workbook(excel_path)
+        ws = wb.active
 
-    # Obtener cabeceras e índices de columnas
     headers = [cell.value for cell in ws[1]]
+    if "Picture Url 1" not in headers:
+        headers.append("Picture Url 1")
+        ws.cell(row=1, column=len(headers)).value = "Picture Url 1"
+    if "Plataforma" not in headers:
+        headers.append("Plataforma")
+        ws.cell(row=1, column=len(headers)).value = "Plataforma"
+
     idx_text = headers.index("Text") + 1
     idx_date = headers.index("Date") + 1
     idx_title = headers.index("Document title") + 1
@@ -43,19 +50,11 @@ for row in rows:
     idx_yt_tags = headers.index("Youtube Video Tags") + 1
     idx_comment = headers.index("First Comment Text") + 1
     idx_tiktok = headers.index("TikTok Title") + 1
-
-    # Detectar filas vacías
-    filas_vacias = []
-    for fila in range(2, ws.max_row + 1):
-        if ws.cell(row=fila, column=idx_text).value in (None, ""):
-            filas_vacias.append(fila)
+    idx_picture = headers.index("Picture Url 1") + 1
+    idx_platform = headers.index("Plataforma") + 1
 
     reels_generados = 0
-
-    for fila_objetivo in filas_vacias:
-        if reels_generados >= reels_por_campaña:
-            break
-
+    while reels_generados < reels_por_campaña:
         opciones_servicios = []
         if commercial_services:
             opciones_servicios.append(commercial_services)
@@ -63,19 +62,16 @@ for row in rows:
             opciones_servicios.append(residential_services)
         if not opciones_servicios:
             print(f"⚠️ No hay servicios en {campaign_name}")
-            continue
+            break
 
-        servicio_seleccionado = random.choice(random.choice(opciones_servicios).split(", "))
-        print(f"📌 Servicio elegido: {servicio_seleccionado}")
+        servicio = random.choice(random.choice(opciones_servicios).split(", "))
+        print(f"📌 Servicio elegido: {servicio}")
+        gpt = GPT({"service": servicio, "campaign": campaign_key, "lang": lang.lower()})
 
-        gpt = GPT({"service": servicio_seleccionado, "campaign": campaign_key, "lang": lang.lower()})
-
-        # === Generar datos GPT según campaña ===
         if campaign_key == "osceola_fence_company":
             theme = gpt.theme_osceola()
             data = {
                 "Text": gpt.copy_osceola(theme, 100),
-                "Date": fecha_actual,
                 "Document title": gpt.document_title_osceola(theme),
                 "Youtube Video Title": gpt.youtube_video_title_osceola(theme, 40),
                 "Youtube Video Tags": gpt.youtube_video_tags_osceola(theme),
@@ -87,7 +83,6 @@ for row in rows:
             theme = gpt.theme_quick_cleaning()
             data = {
                 "Text": gpt.copy_quick_cleaning(theme, 100),
-                "Date": fecha_actual,
                 "Document title": gpt.document_title_quick_cleaning(theme),
                 "Youtube Video Title": gpt.youtube_video_title_quick_cleaning(theme),
                 "Youtube Video Tags": gpt.youtube_video_tags_quick_cleaning(theme),
@@ -99,7 +94,6 @@ for row in rows:
             theme = gpt.theme_elite_spa()
             data = {
                 "Text": gpt.copy_elite_spa(theme, 100),
-                "Date": fecha_actual,
                 "Document title": gpt.document_title_elite_spa(theme),
                 "Youtube Video Title": gpt.youtube_video_title_elite_spa(theme),
                 "Youtube Video Tags": gpt.youtube_video_tags_elite_spa(theme),
@@ -111,7 +105,6 @@ for row in rows:
             theme = gpt.theme_lopez_abogados()
             data = {
                 "Text": gpt.copy_lopez_abogados(theme, 100),
-                "Date": fecha_actual,
                 "Document title": gpt.document_title_lopez_abogados(theme),
                 "Youtube Video Title": gpt.youtube_video_title_lopez_abogados(theme),
                 "Youtube Video Tags": gpt.youtube_video_tags_lopez_abogados(theme),
@@ -123,7 +116,6 @@ for row in rows:
             theme = gpt.theme_botanica()
             data = {
                 "Text": gpt.copy_botanica(theme, 100),
-                "Date": fecha_actual,
                 "Document title": gpt.document_title_botanica(theme),
                 "Youtube Video Title": gpt.youtube_video_title_botanica(theme, 50),
                 "Youtube Video Tags": gpt.youtube_video_tags_botanica(theme),
@@ -135,22 +127,56 @@ for row in rows:
             print(f"⚠️ Campaña '{campaign_key}' no tiene métodos aún.")
             continue
 
-        # === Llenar fila con datos ===
-        ws.cell(row=fila_objetivo, column=idx_text).value = data["Text"]
-        ws.cell(row=fila_objetivo, column=idx_date).value = data["Date"]
-        ws.cell(row=fila_objetivo, column=idx_title).value = data["Document title"]
-        ws.cell(row=fila_objetivo, column=idx_yt_title).value = data["Youtube Video Title"]
-        ws.cell(row=fila_objetivo, column=idx_yt_tags).value = data["Youtube Video Tags"]
-        ws.cell(row=fila_objetivo, column=idx_comment).value = data["First Comment Text"]
-        ws.cell(row=fila_objetivo, column=idx_tiktok).value = data["TikTok Title"]
+        print("📥 Texto (Text):", data["Text"])
+        print("📄 Título:", data["Document title"])
+        plataforma = random.choice(["youtube", "youtube shorts", "instagram reels"])
+
+        try:
+            print("🚀 Ejecutando bot 1...")
+            subprocess.run(
+                ["python", "main.py", data["Text"], plataforma, data["Document title"], campaign_key],
+                cwd=r"C:\Users\DESARROLLADOR\Documents\Manuel Cardona\bot_creacion_reels",
+                check=True,
+                timeout=900
+            )
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Error al ejecutar bot 1: {e}")
+            break
 
         reels_generados += 1
 
-    # === Limpiar celdas vacías extras (Metricool friendly) ===
-    max_fila_valida = max(filas_vacias[:reels_generados]) if reels_generados else 1
-    for fila in range(max_fila_valida + 1, ws.max_row + 1):
-        for col in range(1, ws.max_column + 1):
-            ws.cell(row=fila, column=col).value = None
+    print("🗂️ Generando Excel desde base de datos...")
 
-    wb.save(nuevo_excel)
-    print(f"✅ Excel guardado en carpeta '{carpeta_destino}': {nuevo_excel}")
+    with SessionLocal() as session:
+        query = sql_text("""
+            SELECT description, platform_video, url_drive 
+            FROM videos 
+            WHERE campaign = :camp AND upload_drive = true 
+            ORDER BY id
+        """)
+        resultados = session.execute(query, {"camp": campaign_key}).fetchall()
+
+        if not resultados:
+            print(f"⚠️ No se encontraron resultados para {campaign_key} en la DB.")
+        else:
+            for fila_db in resultados:
+                descripcion, plataforma, url = fila_db
+
+                for row in range(2, ws.max_row + 1):
+                    if not ws.cell(row=row, column=idx_text).value:
+                        ws.cell(row=row, column=idx_text).value = descripcion
+                        ws.cell(row=row, column=idx_date).value = fecha_actual
+                        ws.cell(row=row, column=idx_title).value = ""
+                        ws.cell(row=row, column=idx_yt_title).value = ""
+                        ws.cell(row=row, column=idx_yt_tags).value = ""
+                        ws.cell(row=row, column=idx_comment).value = ""
+                        ws.cell(row=row, column=idx_tiktok).value = ""
+                        ws.cell(row=row, column=idx_platform).value = plataforma
+                        ws.cell(row=row, column=idx_picture).value = url
+                        print(f"✅ Fila {row} completada en plantilla.")
+                        break
+
+            wb.save(excel_path)
+            print(f"📊 Excel final guardado: {excel_path}")
+
+print("\n✅ Todas las campañas han sido procesadas.")
