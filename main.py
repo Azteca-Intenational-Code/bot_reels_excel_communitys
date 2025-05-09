@@ -11,7 +11,7 @@ import os
 # Configuración
 plantilla_path = "Archivo de prueba reels para Niyi.xlsx"
 fecha_actual = datetime.today()
-reels_por_campaña = 2
+reels_por_campaña = 30
 carpeta_destino = "excel_campañas"
 
 if not os.path.exists(carpeta_destino):
