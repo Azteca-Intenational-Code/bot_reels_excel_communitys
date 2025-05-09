@@ -3,15 +3,15 @@ from config import SessionLocal
 from sqlalchemy import text as sql_text
 from GptAPi import GPT
 from openpyxl import load_workbook
-from datetime import datetime
+from datetime import datetime, timedelta
 import shutil
 import random
 import os
 
 # Configuración
 plantilla_path = "Archivo de prueba reels para Niyi.xlsx"
-fecha_actual = datetime.today().strftime("%d/%m/%Y")
-reels_por_campaña = 30
+fecha_actual = datetime.today()
+reels_por_campaña = 2
 carpeta_destino = "excel_campañas"
 
 if not os.path.exists(carpeta_destino):
@@ -20,6 +20,11 @@ if not os.path.exists(carpeta_destino):
 with SessionLocal() as session:
     result = session.execute(sql_text("SELECT campaign, commercial_services, residential_services, language FROM campaign"))
     rows = result.fetchall()
+
+dias_semana = {
+    0: "lunes", 1: "martes", 2: "miércoles", 3: "jueves",
+    4: "viernes", 5: "sábado", 6: "domingo"
+}
 
 for row in rows:
     campaign_name, commercial_services, residential_services, lang = row
@@ -39,9 +44,9 @@ for row in rows:
     if "Picture Url 1" not in headers:
         headers.append("Picture Url 1")
         ws.cell(row=1, column=len(headers)).value = "Picture Url 1"
-    if "Plataforma" not in headers:
-        headers.append("Plataforma")
-        ws.cell(row=1, column=len(headers)).value = "Plataforma"
+    if "Time" not in headers:
+        headers.append("Time")
+        ws.cell(row=1, column=len(headers)).value = "Time"
 
     idx_text = headers.index("Text") + 1
     idx_date = headers.index("Date") + 1
@@ -51,7 +56,7 @@ for row in rows:
     idx_comment = headers.index("First Comment Text") + 1
     idx_tiktok = headers.index("TikTok Title") + 1
     idx_picture = headers.index("Picture Url 1") + 1
-    idx_platform = headers.index("Plataforma") + 1
+    idx_time = headers.index("Time") + 1
 
     reels_generados = 0
     while reels_generados < reels_por_campaña:
@@ -135,7 +140,7 @@ for row in rows:
             print("🚀 Ejecutando bot 1...")
             subprocess.run(
                 ["python", "main.py", data["Text"], plataforma, data["Document title"], campaign_key],
-                cwd=r"C:\Users\DESARROLLADOR\Documents\Manuel Cardona\bot_creacion_reels",
+                cwd=r"C:\\Users\\DESARROLLADOR\\Documents\\Manuel Cardona\\bot_creacion_reels",
                 check=True,
                 timeout=900
             )
@@ -145,7 +150,7 @@ for row in rows:
 
         reels_generados += 1
 
-    print("🗂️ Generando Excel desde base de datos...")
+    print("📂 Generando Excel desde base de datos...")
 
     with SessionLocal() as session:
         query = sql_text("""
@@ -159,21 +164,71 @@ for row in rows:
         if not resultados:
             print(f"⚠️ No se encontraron resultados para {campaign_key} en la DB.")
         else:
-            for fila_db in resultados:
+            for i, fila_db in enumerate(resultados):
                 descripcion, plataforma, url = fila_db
+                fecha_reel = fecha_actual + timedelta(days=i)
+                dia_nombre = dias_semana[fecha_reel.weekday()]
+
+                # Obtener horario aleatorio desde tabla horarios
+                horario_query = sql_text("""
+                    SELECT hour FROM horarios 
+                    WHERE platform_video = :plat AND day = :dia
+                """)
+                horarios = session.execute(horario_query, {"plat": plataforma, "dia": dia_nombre}).fetchall()
+                id_horario = None
+                hora_final = "00:00"
+
+                if horarios:
+                    horario_elegido = random.choice(horarios)
+                    hora_final = horario_elegido[0].strftime("%H:%M")
+                    
+                    # Obtener el id de ese horario específico
+                    id_horario_query = sql_text("""
+                        SELECT id FROM horarios
+                        WHERE platform_video = :plat AND day = :dia AND hour = :hora
+                        LIMIT 1
+                    """)
+                    resultado = session.execute(id_horario_query, {
+                        "plat": plataforma,
+                        "dia": dia_nombre,
+                        "hora": horario_elegido[0]
+                    }).fetchone()
+                    
+                    if resultado:
+                        id_horario = resultado[0]
+
 
                 for row in range(2, ws.max_row + 1):
                     if not ws.cell(row=row, column=idx_text).value:
                         ws.cell(row=row, column=idx_text).value = descripcion
-                        ws.cell(row=row, column=idx_date).value = fecha_actual
+                        ws.cell(row=row, column=idx_date).value = fecha_reel.strftime("%d/%m/%Y")
                         ws.cell(row=row, column=idx_title).value = ""
                         ws.cell(row=row, column=idx_yt_title).value = ""
                         ws.cell(row=row, column=idx_yt_tags).value = ""
                         ws.cell(row=row, column=idx_comment).value = ""
                         ws.cell(row=row, column=idx_tiktok).value = ""
-                        ws.cell(row=row, column=idx_platform).value = plataforma
                         ws.cell(row=row, column=idx_picture).value = url
+                        ws.cell(row=row, column=idx_time).value = hora_final
                         print(f"✅ Fila {row} completada en plantilla.")
+                        # Asignar id_horario a la tabla videos
+                        if id_horario:
+                            campaign_key = str(campaign_key)
+                            descripcion = str(descripcion)
+                            update_query = sql_text("""
+                                UPDATE videos
+                                SET id_horario = :id_hor
+                                WHERE ctid = (
+                                    SELECT ctid FROM videos
+                                    WHERE campaign = :camp AND description = :desc AND upload_drive = true
+                                    LIMIT 1
+                                )
+                            """)
+                            session.execute(update_query, {
+                                "id_hor": int(id_horario),
+                                "camp": str(campaign_key),
+                                "desc": str(descripcion)
+                            })
+                            session.commit()
                         break
 
             wb.save(excel_path)
