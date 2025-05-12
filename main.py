@@ -206,9 +206,24 @@ for row in rows:
                     print(f"✅ Fila {row} completada.")
                     post_generados += 1
                     break
-
+        # Guardar Excel normal
         wb.save(excel_path)
         print(f"📊 Excel guardado: {excel_path}")
+
+        # Guardar también como CSV duplicando los datos del Excel
+        csv_path = excel_path.replace(".xlsx", ".csv")
+        with open(csv_path, "w", encoding="utf-8", newline="") as f:
+            from csv import writer
+            csv_writer = writer(f)
+
+            # Escribir encabezados
+            csv_writer.writerow([cell.value for cell in ws[1]])
+
+            # Escribir filas
+            for row in ws.iter_rows(min_row=2, values_only=True):
+                csv_writer.writerow(row)
+
+        print(f"📄 También guardado como CSV: {csv_path}")
 
 print("\n✅ Todas las campañas han sido procesadas.")
 
