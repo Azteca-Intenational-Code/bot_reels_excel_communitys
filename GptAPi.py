@@ -373,6 +373,18 @@ class GPT:
         return self.generate_response("gpt-3.5-turbo", [system_message, assistant_message, user_message]).replace('"', "")
     
 
+    def comment_from_title(self, video_title):
+        system_message = self.create_message("system", self.SYSTEM_MESSAGE)
+        assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
+        user_message = self.create_message(
+            "user",
+            f"Simula ser una persona real que acaba de ver un video con el título '{video_title}'. "
+            "Escribe un comentario corto y natural como si le hubiera gustado el contenido. "
+            "Debe sonar auténtico, cercano y generar interés en otros usuarios, usando un tono amigable. "
+            "No uses emojis ni hashtags. No repitas el título. Máximo 15 palabras."
+        )
+        return self.generate_response("gpt-3.5-turbo", [system_message, assistant_message, user_message]).strip('"')
+
     def document_title_botanica(self, theme):
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)
         assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)

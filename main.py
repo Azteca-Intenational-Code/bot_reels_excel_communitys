@@ -11,7 +11,7 @@ import os
 # Configuración
 plantilla_path = "Archivo de prueba reels para Niyi.xlsx"
 fecha_actual = datetime.today()
-reels_por_campaña = 30
+reels_por_campaña = 0
 carpeta_destino = "excel_campañas"
 
 if not os.path.exists(carpeta_destino):
@@ -41,23 +41,32 @@ for row in rows:
         ws = wb.active
 
     headers = [cell.value for cell in ws[1]]
-    if "Picture Url 1" not in headers:
-        headers.append("Picture Url 1")
-        ws.cell(row=1, column=len(headers)).value = "Picture Url 1"
-    if "Time" not in headers:
-        headers.append("Time")
-        ws.cell(row=1, column=len(headers)).value = "Time"
-
+    for col in ["Picture Url 1", "Time", "Facebook Title"]:
+        if col not in headers:
+            headers.append(col)
+            ws.cell(row=1, column=len(headers)).value = col
+    
+    post_generados = 0
     idx_text = headers.index("Text") + 1
     idx_date = headers.index("Date") + 1
     idx_title = headers.index("Document title") + 1
     idx_yt_title = headers.index("Youtube Video Title") + 1
     idx_yt_tags = headers.index("Youtube Video Tags") + 1
+    idx_fb_title = headers.index("Facebook Title") + 1
     idx_comment = headers.index("First Comment Text") + 1
     idx_tiktok = headers.index("TikTok Title") + 1
     idx_picture = headers.index("Picture Url 1") + 1
     idx_time = headers.index("Time") + 1
+    idx_brand = headers.index("Brand name") + 1 if "Brand name" in headers else None
 
+    cols_autoincrement = [
+        "Document title", "Youtube Video Title", "Youtube Video Tags",
+        "Facebook Title", "TikTok Title"
+    ]
+
+    idx_autoincrement = {
+        col: headers.index(col) + 1 for col in cols_autoincrement if col in headers
+    }
     reels_generados = 0
     while reels_generados < reels_por_campaña:
         opciones_servicios = []
@@ -81,7 +90,7 @@ for row in rows:
                 "Youtube Video Title": gpt.youtube_video_title_osceola(theme, 40),
                 "Youtube Video Tags": gpt.youtube_video_tags_osceola(theme),
                 "First Comment Text": gpt.firts_comment_osceola(theme, 50),
-                "TikTok Title": gpt.tikTok_title_osceola(theme, 50)
+                "TikTok Title": gpt.tikTok_title_osceola(theme, 50),
             }
 
         elif campaign_key == "quick_cleaning":
@@ -92,7 +101,7 @@ for row in rows:
                 "Youtube Video Title": gpt.youtube_video_title_quick_cleaning(theme),
                 "Youtube Video Tags": gpt.youtube_video_tags_quick_cleaning(theme),
                 "First Comment Text": gpt.firts_comment_quick_cleaning(theme, 50),
-                "TikTok Title": gpt.tikTok_title_quick_cleaning(theme, 50)
+                "TikTok Title": gpt.tikTok_title_quick_cleaning(theme, 50),
             }
 
         elif campaign_key == "elite_chicago_spa":
@@ -103,7 +112,7 @@ for row in rows:
                 "Youtube Video Title": gpt.youtube_video_title_elite_spa(theme),
                 "Youtube Video Tags": gpt.youtube_video_tags_elite_spa(theme),
                 "First Comment Text": gpt.firts_comment_elite_spa(theme, 50),
-                "TikTok Title": gpt.tikTok_title_elite_spa(theme, 50)
+                "TikTok Title": gpt.tikTok_title_elite_spa(theme, 50),
             }
 
         elif campaign_key == "lopez_&_lopez_abogados":
@@ -114,7 +123,7 @@ for row in rows:
                 "Youtube Video Title": gpt.youtube_video_title_lopez_abogados(theme),
                 "Youtube Video Tags": gpt.youtube_video_tags_lopez_abogados(theme),
                 "First Comment Text": gpt.firts_comment_lopez_abogados(theme, 50),
-                "TikTok Title": gpt.tikTok_title_lopez_abogados(theme, 50)
+                "TikTok Title": gpt.tikTok_title_lopez_abogados(theme, 50),
             }
 
         elif campaign_key.startswith("botanica"):
@@ -125,7 +134,7 @@ for row in rows:
                 "Youtube Video Title": gpt.youtube_video_title_botanica(theme, 50),
                 "Youtube Video Tags": gpt.youtube_video_tags_botanica(theme),
                 "First Comment Text": gpt.firts_comment_botanica(theme, 50),
-                "TikTok Title": gpt.tikTok_title_botanica(theme, 50)
+                "TikTok Title": gpt.tikTok_title_botanica(theme, 50),
             }
 
         else:
@@ -134,7 +143,7 @@ for row in rows:
 
         print("📥 Texto (Text):", data["Text"])
         print("📄 Título:", data["Document title"])
-        plataforma = random.choice(["youtube", "youtube shorts", "instagram reels"])
+        plataforma = random.choice(["youtube shorts", "instagram reels"])
 
         try:
             print("🚀 Ejecutando bot 1...")
@@ -151,7 +160,6 @@ for row in rows:
         reels_generados += 1
 
     print("📂 Generando Excel desde base de datos...")
-
     with SessionLocal() as session:
         query = sql_text("""
             SELECT description, platform_video, url_drive 
@@ -161,77 +169,55 @@ for row in rows:
         """)
         resultados = session.execute(query, {"camp": campaign_key}).fetchall()
 
-        if not resultados:
-            print(f"⚠️ No se encontraron resultados para {campaign_key} en la DB.")
-        else:
-            for i, fila_db in enumerate(resultados):
-                descripcion, plataforma, url = fila_db
-                fecha_reel = fecha_actual + timedelta(days=i)
-                dia_nombre = dias_semana[fecha_reel.weekday()]
+        for i, fila_db in enumerate(resultados):
+            descripcion, plataforma, url = fila_db
+            fecha_reel = fecha_actual + timedelta(days=i)
+            dia_nombre = dias_semana[fecha_reel.weekday()]
 
-                # Obtener horario aleatorio desde tabla horarios
-                horario_query = sql_text("""
-                    SELECT hour FROM horarios 
-                    WHERE platform_video = :plat AND day = :dia
-                """)
-                horarios = session.execute(horario_query, {"plat": plataforma, "dia": dia_nombre}).fetchall()
-                id_horario = None
-                hora_final = "00:00"
+            horario_query = sql_text("""
+                SELECT hour FROM schedules 
+                WHERE platform_video = :plat AND day = :dia
+            """)
+            schedules = session.execute(horario_query, {"plat": plataforma, "dia": dia_nombre}).fetchall()
+            hora_final = "00:00"
+            if schedules:
+                horario_elegido = random.choice(schedules)
+                hora_final = horario_elegido[0].strftime("%H:%M")
 
-                if horarios:
-                    horario_elegido = random.choice(horarios)
-                    hora_final = horario_elegido[0].strftime("%H:%M")
-                    
-                    # Obtener el id de ese horario específico
-                    id_horario_query = sql_text("""
-                        SELECT id FROM horarios
-                        WHERE platform_video = :plat AND day = :dia AND hour = :hora
-                        LIMIT 1
-                    """)
-                    resultado = session.execute(id_horario_query, {
-                        "plat": plataforma,
-                        "dia": dia_nombre,
-                        "hora": horario_elegido[0]
-                    }).fetchone()
-                    
-                    if resultado:
-                        id_horario = resultado[0]
+            gpt = GPT({"service": "comentario", "campaign": campaign_key, "lang": lang.lower()})
+            comentario = gpt.comment_from_title(f"{campaign_key.title()} Video")  # Simular reacción
 
+            for row in range(2, ws.max_row + 1):
+                if not ws.cell(row=row, column=idx_text).value:
+                    ws.cell(row=row, column=idx_text).value = descripcion
+                    ws.cell(row=row, column=idx_date).value = fecha_reel.strftime("%Y-%m-%d")
+                    ws.cell(row=row, column=idx_title).value = str(post_generados + 1)
+                    ws.cell(row=row, column=idx_yt_title).value = str(post_generados + 1)
+                    ws.cell(row=row, column=idx_yt_tags).value = str(post_generados + 1)
+                    ws.cell(row=row, column=idx_fb_title).value = str(post_generados + 1)
+                    ws.cell(row=row, column=idx_tiktok).value = str(post_generados + 1)
+                    ws.cell(row=row, column=idx_comment).value = comentario
+                    ws.cell(row=row, column=idx_picture).value = url
+                    ws.cell(row=row, column=idx_time).value = hora_final
+                    if idx_brand:
+                        ws.cell(row=row, column=idx_brand).value = campaign_name
+                    for idx_col in idx_autoincrement.values():
+                        ws.cell(row=row, column=idx_col).value = str(post_generados + 1)
+                    print(f"✅ Fila {row} completada.")
+                    post_generados += 1
+                    break
 
-                for row in range(2, ws.max_row + 1):
-                    if not ws.cell(row=row, column=idx_text).value:
-                        ws.cell(row=row, column=idx_text).value = descripcion
-                        ws.cell(row=row, column=idx_date).value = fecha_reel.strftime("%d/%m/%Y")
-                        ws.cell(row=row, column=idx_title).value = ""
-                        ws.cell(row=row, column=idx_yt_title).value = ""
-                        ws.cell(row=row, column=idx_yt_tags).value = ""
-                        ws.cell(row=row, column=idx_comment).value = ""
-                        ws.cell(row=row, column=idx_tiktok).value = ""
-                        ws.cell(row=row, column=idx_picture).value = url
-                        ws.cell(row=row, column=idx_time).value = hora_final
-                        print(f"✅ Fila {row} completada en plantilla.")
-                        # Asignar id_horario a la tabla videos
-                        if id_horario:
-                            campaign_key = str(campaign_key)
-                            descripcion = str(descripcion)
-                            update_query = sql_text("""
-                                UPDATE videos
-                                SET id_horario = :id_hor
-                                WHERE ctid = (
-                                    SELECT ctid FROM videos
-                                    WHERE campaign = :camp AND description = :desc AND upload_drive = true
-                                    LIMIT 1
-                                )
-                            """)
-                            session.execute(update_query, {
-                                "id_hor": int(id_horario),
-                                "camp": str(campaign_key),
-                                "desc": str(descripcion)
-                            })
-                            session.commit()
-                        break
-
-            wb.save(excel_path)
-            print(f"📊 Excel final guardado: {excel_path}")
+        wb.save(excel_path)
+        print(f"📊 Excel guardado: {excel_path}")
 
 print("\n✅ Todas las campañas han sido procesadas.")
+
+try:
+    print("🚀 Ejecutando bot 3 para subir excels a Metricool...")
+    subprocess.run(
+        ["python", "main.py"],
+        cwd=r"C:\\Users\\DESARROLLADOR\\Documents\\Manuel Cardona\\bot_metricool",
+        check=True
+    )
+except subprocess.CalledProcessError as e:
+    print(f"❌ Error al ejecutar bot 3: {e}")
