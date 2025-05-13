@@ -11,7 +11,7 @@ import os
 # Configuración
 plantilla_path = "Archivo de prueba reels para Niyi.xlsx"
 fecha_actual = datetime.today()
-reels_por_campaña = 0
+reels_por_campaña = 1
 carpeta_destino = "excel_campañas"
 
 if not os.path.exists(carpeta_destino):
@@ -20,6 +20,12 @@ if not os.path.exists(carpeta_destino):
 with SessionLocal() as session:
     result = session.execute(sql_text("SELECT campaign, commercial_services, residential_services, language FROM campaign"))
     rows = result.fetchall()
+
+if rows:
+    rows = rows[:2]
+else:
+    print("⚠️ No hay campañas disponibles en la base de datos.")
+    exit()
 
 dias_semana = {
     0: "lunes", 1: "martes", 2: "miércoles", 3: "jueves",
@@ -115,7 +121,7 @@ for row in rows:
                 "TikTok Title": gpt.tikTok_title_elite_spa(theme, 50),
             }
 
-        elif campaign_key == "lopez_&_lopez_abogados":
+        elif campaign_key == "lopez_y_lopez_abogados":
             theme = gpt.theme_lopez_abogados()
             data = {
                 "Text": gpt.copy_lopez_abogados(theme, 100),
@@ -126,7 +132,29 @@ for row in rows:
                 "TikTok Title": gpt.tikTok_title_lopez_abogados(theme, 50),
             }
 
+        elif campaign_key.startswith("botánica"):
+            theme = gpt.theme_botanica()
+            data = {
+                "Text": gpt.copy_botanica(theme, 100),
+                "Document title": gpt.document_title_botanica(theme),
+                "Youtube Video Title": gpt.youtube_video_title_botanica(theme, 50),
+                "Youtube Video Tags": gpt.youtube_video_tags_botanica(theme),
+                "First Comment Text": gpt.firts_comment_botanica(theme, 50),
+                "TikTok Title": gpt.tikTok_title_botanica(theme, 50),
+            }
+
         elif campaign_key.startswith("botanica"):
+            theme = gpt.theme_botanica()
+            data = {
+                "Text": gpt.copy_botanica(theme, 100),
+                "Document title": gpt.document_title_botanica(theme),
+                "Youtube Video Title": gpt.youtube_video_title_botanica(theme, 50),
+                "Youtube Video Tags": gpt.youtube_video_tags_botanica(theme),
+                "First Comment Text": gpt.firts_comment_botanica(theme, 50),
+                "TikTok Title": gpt.tikTok_title_botanica(theme, 50),
+            }
+
+        elif campaign_key.startswith("amarres_chicago"):
             theme = gpt.theme_botanica()
             data = {
                 "Text": gpt.copy_botanica(theme, 100),
@@ -179,10 +207,20 @@ for row in rows:
                 WHERE platform_video = :plat AND day = :dia
             """)
             schedules = session.execute(horario_query, {"plat": plataforma, "dia": dia_nombre}).fetchall()
-            hora_final = "00:00"
+            hora_final = "00:00:00"
             if schedules:
-                horario_elegido = random.choice(schedules)
-                hora_final = horario_elegido[0].strftime("%H:%M")
+                horarios_validos = [h[0] for h in schedules]
+
+                # Si el reel es para hoy, filtrar horarios mayores o iguales a la hora actual
+                if fecha_reel.date() == datetime.today().date():
+                    ahora = datetime.now().time()
+                    horarios_validos = [h for h in horarios_validos if h >= ahora]
+                    if not horarios_validos:
+                        print("⚠️ No hay horarios disponibles posteriores a la hora actual. Usando el primero disponible.")
+                        horarios_validos = [h[0] for h in schedules]
+
+                horario_elegido = random.choice(horarios_validos)
+                hora_final = horario_elegido.strftime("%H:%M:%S")
 
             gpt = GPT({"service": "comentario", "campaign": campaign_key, "lang": lang.lower()})
             comentario = gpt.comment_from_title(f"{campaign_key.title()} Video")  # Simular reacción
@@ -206,6 +244,12 @@ for row in rows:
                     print(f"✅ Fila {row} completada.")
                     post_generados += 1
                     break
+
+        # ✅ Eliminar filas vacías (donde la celda 'Text' está vacía)
+        max_row = ws.max_row
+        for row in range(max_row, 1, -1):
+            if not ws.cell(row=row, column=idx_text).value:
+                ws.delete_rows(row)
         # Guardar Excel normal
         wb.save(excel_path)
         print(f"📊 Excel guardado: {excel_path}")
