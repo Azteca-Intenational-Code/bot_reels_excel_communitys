@@ -21,11 +21,12 @@ with SessionLocal() as session:
     result = session.execute(sql_text("SELECT campaign, commercial_services, residential_services, language FROM campaign"))
     rows = result.fetchall()
 
-if rows:
-    rows = rows[:2]
-else:
-    print("⚠️ No hay campañas disponibles en la base de datos.")
+rows = [row for row in rows if row[0].strip().lower() == "elite chicago spa"]
+
+if not rows:
+    print("⚠️ La campaña 'Elite Chicago Spa' no fue encontrada en la base de datos.")
     exit()
+
 
 dias_semana = {
     0: "lunes", 1: "martes", 2: "miércoles", 3: "jueves",
@@ -174,15 +175,21 @@ for row in rows:
         plataforma = random.choice(["youtube shorts", "instagram reels"])
 
         try:
-            print("🚀 Ejecutando bot 1...")
+            print("🚀 Ejecutando bot 2...")
             subprocess.run(
-                ["python", "main.py", data["Text"], plataforma, data["Document title"], campaign_key],
+                ["python", "main.py", data["Text"], plataforma, data["Document title"], campaign_key, lang],
                 cwd=r"C:\\Users\\DESARROLLADOR\\Documents\\Manuel Cardona\\bot_creacion_reels",
                 check=True,
                 timeout=900
             )
+            # subprocess.run(
+            #     ["python", "main.py", "EL mes de Mayo es preparacion del cuerpo para el VERANO. Estamos aun en primavera entonces me gustaria insitar a las personas a que refinen su cuerpo de verano para estar lista o listo para el Bikini. Y en base a esto direccionar los los servicios con la tematica de verano que se aproxima.", plataforma, data["Document title"], campaign_key, lang],
+            #     cwd=r"C:\\Users\\DESARROLLADOR\\Documents\\Manuel Cardona\\bot_creacion_reels",
+            #     check=True,
+            #     timeout=900
+            # )
         except subprocess.CalledProcessError as e:
-            print(f"❌ Error al ejecutar bot 1: {e}")
+            print(f"❌ Error al ejecutar bot 2: {e}")
             break
 
         reels_generados += 1
@@ -211,7 +218,7 @@ for row in rows:
             if schedules:
                 horarios_validos = [h[0] for h in schedules]
 
-                # Si el reel es para hoy, filtrar horarios mayores o iguales a la hora actual
+                # Si el reel es para hoy, filtra horarios mayores o iguales a la hora actual
                 if fecha_reel.date() == datetime.today().date():
                     ahora = datetime.now().time()
                     horarios_validos = [h for h in horarios_validos if h >= ahora]
@@ -223,7 +230,7 @@ for row in rows:
                 hora_final = horario_elegido.strftime("%H:%M:%S")
 
             gpt = GPT({"service": "comentario", "campaign": campaign_key, "lang": lang.lower()})
-            comentario = gpt.comment_from_title(f"{campaign_key.title()} Video")  # Simular reacción
+            comentario = gpt.comment_from_title(f"{campaign_key.title()} Video")  # Genera primer comentario
 
             for row in range(2, ws.max_row + 1):
                 if not ws.cell(row=row, column=idx_text).value:
@@ -245,16 +252,16 @@ for row in rows:
                     post_generados += 1
                     break
 
-        # ✅ Eliminar filas vacías (donde la celda 'Text' está vacía)
+        # ✅ Elimina filas vacías (donde la celda 'Text' está vacía)
         max_row = ws.max_row
         for row in range(max_row, 1, -1):
             if not ws.cell(row=row, column=idx_text).value:
                 ws.delete_rows(row)
-        # Guardar Excel normal
+        # Guarda Excel normal
         wb.save(excel_path)
         print(f"📊 Excel guardado: {excel_path}")
 
-        # Guardar también como CSV duplicando los datos del Excel
+        # Convierte como CSV duplicando los datos del Excel
         csv_path = excel_path.replace(".xlsx", ".csv")
         with open(csv_path, "w", encoding="utf-8", newline="") as f:
             from csv import writer
