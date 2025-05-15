@@ -96,11 +96,19 @@ class GPT:
         assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
         user_message = self.create_message(
             "user",
-            f"Generate a short and engaging first comment for a video about {theme}. The comment should sound natural and authentic, as if it came from a real person, without seeming spammy. It's important to note that the comment is made directly by the company, so it should be attention-grabbing to encourage people to comment. It should subtly foster interaction with a question or a friendly remark. Avoid overused phrases and make it feel personal. Use only one emoji at the end if appropriate. The comment should be {characters} characters long.",
+            f"""
+    Generate a short and engaging first comment for a video about "{theme}". 
+    The comment must be written in **first person**, as if it were posted directly by the company. 
+    It should feel **authentic, friendly, and natural**, avoiding anything that sounds like marketing or spam. 
+    Make it **personal** and end with a **simple, direct question** that invites the audience to interact in the comments (e.g., "What do you think about it?" or "Would you try this?").
+    Use only **one emoji** at the end if appropriate. 
+    Keep it within {characters} characters.
+    """
         )
         return self.generate_response(
             "gpt-3.5-turbo", [system_message, assistant_message, user_message]
         ).replace('"', "")
+
 
     def tikTok_title_osceola(self, theme, characters=50):
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)
@@ -175,7 +183,14 @@ class GPT:
         assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
         user_message = self.create_message(
             "user",
-            f"Generate a short and engaging first comment for a video about {theme}. The comment should sound natural and authentic, as if it came from a real person, without seeming spammy. It's important to note that the comment is made directly by the company, so it should be attention-grabbing to encourage people to comment. It should subtly foster interaction with a question or a friendly remark. Avoid overused phrases and make it feel personal. Use only one emoji at the end if appropriate. The comment should be {characters} characters long.",
+            f"""
+            Generate a short and engaging first comment for a video about "{theme}". 
+            The comment must be written in **first person**, as if it were posted directly by the company. 
+            It should feel **authentic, friendly, and natural**, avoiding anything that sounds like marketing or spam. 
+            Make it **personal** and end with a **simple, direct question** that invites the audience to interact in the comments (e.g., "What do you think about it?" or "Would you try this?").
+            Use only **one emoji** at the end if appropriate. 
+            Keep it within {characters} characters.
+            """,
         )
         return self.generate_response(
             "gpt-3.5-turbo", [system_message, assistant_message, user_message]
@@ -254,7 +269,14 @@ class GPT:
         assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
         user_message = self.create_message(
             "user",
-            f"Generate a short and engaging first comment for a video about {theme}. The comment should sound natural and authentic, as if it came from a real person, without seeming spammy. It's important to note that the comment is made directly by the company, so it should be attention-grabbing to encourage people to comment. It should subtly foster interaction with a question or a friendly remark. Avoid overused phrases and make it feel personal. Use only one emoji at the end if appropriate. The comment should be {characters} characters long.",
+            f"""
+            Generate a short and engaging first comment for a video about "{theme}". 
+            The comment must be written in **first person**, as if it were posted directly by the company. 
+            It should feel **authentic, friendly, and natural**, avoiding anything that sounds like marketing or spam. 
+            Make it **personal** and end with a **simple, direct question** that invites the audience to interact in the comments (e.g., "What do you think about it?" or "Would you try this?").
+            Use only **one emoji** at the end if appropriate. 
+            Keep it within {characters} characters.
+            """,
         )
         return self.generate_response(
             "gpt-3.5-turbo", [system_message, assistant_message, user_message]
@@ -329,12 +351,18 @@ class GPT:
         ).replace('"', "")
 
     def firts_comment_lopez_abogados(self, theme, characters=90):
-        
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)
         assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
         user_message = self.create_message(
             "user",
-            f"Generate a **formal and trustworthy first comment** for a video about {theme}. The comment must reflect the **voice of a professional law firm**, express respect, and subtly invite interaction through a **thoughtful legal remark or question**. Avoid casual phrases. Conclude with one **appropriate legal emoji**. Max {characters} characters."
+            f"""
+    Generate a **formal and trustworthy first comment** for a video about "{theme}". 
+    The comment must be written in **first person**, reflecting the voice of a **professional law firm**. 
+    It should communicate respect, knowledge, and credibility, while inviting users to engage through a **thought-provoking legal question or insight**. 
+    Avoid casual or marketing phrases. Keep the tone serious but human. 
+    End with **one appropriate legal emoji** if relevant. 
+    Limit to {characters} characters.
+    """
         )
         return self.generate_response(
             "gpt-3.5-turbo", [system_message, assistant_message, user_message]
@@ -420,10 +448,15 @@ class GPT:
         assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
         user_message = self.create_message(
             "user",
-            f"Genera un primer comentario para YouTube sobre {theme}. Que suene auténtico, humanizado, místico y genere interacción, es importante que el comentario parezca realizado por la empresa. Incluye máximo 1 emoji. Máximo {characters} caracteres.",
+            f"""
+    Genera un primer comentario para YouTube sobre "{theme}". 
+    Debe estar escrito en **primera persona**, como si fuera publicado directamente por la empresa botánica. 
+    El comentario debe sonar **auténtico, místico, humanizado** y **fomentar la interacción**, ya sea con una **pregunta espiritual o reflexión energética**. 
+    Debe parecer cercano, natural, sin parecer publicidad directa. 
+    Incluye **máximo 1 emoji** si aplica. Máximo {characters} caracteres.
+    """
         )
         return self.generate_response("gpt-3.5-turbo", [system_message, assistant_message, user_message]).replace('"', "")
-
 
     def tikTok_title_botanica(self, theme, characters=50):
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)

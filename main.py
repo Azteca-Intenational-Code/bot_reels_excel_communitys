@@ -3,6 +3,7 @@ from config import SessionLocal
 from sqlalchemy import text as sql_text
 from GptAPi import GPT
 from openpyxl import load_workbook
+from calendar import month_name
 from datetime import datetime, timedelta
 import shutil
 import random
@@ -11,8 +12,10 @@ import os
 # Configuración
 plantilla_path = "Archivo de prueba reels para Niyi.xlsx"
 fecha_actual = datetime.today()
-reels_por_campaña = 1
+reels_por_campaña = 30
 carpeta_destino = "excel_campañas"
+mes_actual = datetime.today().month
+nombre_mes_actual = month_name[mes_actual]
 
 if not os.path.exists(carpeta_destino):
     os.makedirs(carpeta_destino)
@@ -21,11 +24,11 @@ with SessionLocal() as session:
     result = session.execute(sql_text("SELECT campaign, commercial_services, residential_services, language FROM campaign"))
     rows = result.fetchall()
 
-rows = [row for row in rows if row[0].strip().lower() == "elite chicago spa"]
+# rows = [row for row in rows if row[0].strip().lower() == "elite chicago spa"]
 
-if not rows:
-    print("⚠️ La campaña 'Elite Chicago Spa' no fue encontrada en la base de datos.")
-    exit()
+# if not rows:
+#     print("⚠️ La campaña 'Elite Chicago Spa' no fue encontrada en la base de datos.")
+#     exit()
 
 
 dias_semana = {
@@ -74,6 +77,44 @@ for row in rows:
     idx_autoincrement = {
         col: headers.index(col) + 1 for col in cols_autoincrement if col in headers
     }
+
+    with SessionLocal() as session:
+        result = session.execute(sql_text("""
+            SELECT id FROM campaign WHERE LOWER(TRIM(campaign)) = :nombre
+        """), {"nombre": campaign_name.lower().strip()})
+        row = result.fetchone()
+        if row:
+            id_campania = row[0]
+        else:
+            print(f"❌ No se encontró el ID para la campaña '{campaign_name}'")
+            exit()
+
+        result = session.execute(sql_text("""
+            SELECT theme, event, focus, suggestions, date
+            FROM annual_schedule
+            WHERE id_campaign = :id AND LOWER(TRIM(month)) = :mes
+        """), {"id": id_campania, "mes": nombre_mes_actual.lower().strip()})
+
+        evento_db = result.fetchone()
+        if not evento_db:
+            print(f"⚠️ No hay información en annual_schedule para el mes {mes_actual} y campaña ID {id_campania}")
+            theme_event = evento_principal = focus = suggestions = "No aplica"
+        else:
+            theme_event, event, focus, suggestions, fecha_evento = evento_db
+            eventos = event.split(", ") if event else []
+
+            # Validar si la fecha ya pasó
+            if fecha_evento and fecha_evento < datetime.today().date():
+                print(f"📆 La fecha del evento {fecha_evento} ya pasó. No se promocionará.")
+                evento_principal = "No aplica"
+            else:
+                evento_principal = eventos[0].strip() if eventos else "No aplica"
+
+    print(f"\n📢 Tema campaña: {theme_event}")
+    print(f"\n📢 Evento campaña: {event}]")
+    print(f"\n📢 focus campaña: {focus}]")
+    print(f"\n📢 suggestions campaña: {suggestions}]")
+
     reels_generados = 0
     while reels_generados < reels_por_campaña:
         opciones_servicios = []
@@ -177,17 +218,23 @@ for row in rows:
         try:
             print("🚀 Ejecutando bot 2...")
             subprocess.run(
-                ["python", "main.py", data["Text"], plataforma, data["Document title"], campaign_key, lang],
+                [
+                    "python", "main.py",
+                    data["Text"],
+                    plataforma,
+                    data["Document title"],
+                    campaign_key,
+                    lang,
+                    theme_event,
+                    evento_principal,
+                    focus,
+                    suggestions,
+                    servicio
+                ],
                 cwd=r"C:\\Users\\DESARROLLADOR\\Documents\\Manuel Cardona\\bot_creacion_reels",
                 check=True,
                 timeout=900
             )
-            # subprocess.run(
-            #     ["python", "main.py", "EL mes de Mayo es preparacion del cuerpo para el VERANO. Estamos aun en primavera entonces me gustaria insitar a las personas a que refinen su cuerpo de verano para estar lista o listo para el Bikini. Y en base a esto direccionar los los servicios con la tematica de verano que se aproxima.", plataforma, data["Document title"], campaign_key, lang],
-            #     cwd=r"C:\\Users\\DESARROLLADOR\\Documents\\Manuel Cardona\\bot_creacion_reels",
-            #     check=True,
-            #     timeout=900
-            # )
         except subprocess.CalledProcessError as e:
             print(f"❌ Error al ejecutar bot 2: {e}")
             break
