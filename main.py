@@ -12,7 +12,7 @@ import os
 # Configuración
 plantilla_path = "Archivo de prueba reels para Niyi.xlsx"
 fecha_actual = datetime.today()
-reels_por_campaña = 30
+reels_por_campaña = 2
 carpeta_destino = "excel_campañas"
 mes_actual = datetime.today().month
 nombre_mes_actual = month_name[mes_actual]
@@ -130,7 +130,7 @@ for row in rows:
         print(f"📌 Servicio elegido: {servicio}")
         gpt = GPT({"service": servicio, "campaign": campaign_key, "lang": lang.lower()})
 
-        if campaign_key == "osceola_fence_company":
+        if campaign_key == "osceola_fence_corporation":
             theme = gpt.theme_osceola()
             data = {
                 "Text": gpt.copy_osceola(theme, 100),
@@ -231,7 +231,7 @@ for row in rows:
                     suggestions,
                     servicio
                 ],
-                cwd=r"C:\\Users\\DESARROLLADOR\\Documents\\Manuel Cardona\\bot_creacion_reels",
+                cwd=r"C:\Users\Programador2\Documents\Antonio Barreto\Communitys\bot_creacion_reels",
                 check=True,
                 timeout=900
             )

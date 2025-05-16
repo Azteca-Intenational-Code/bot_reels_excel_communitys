@@ -1,1 +1,4 @@
 .env 
+excel_campañas/
+__pycache__/
+*.pyc
