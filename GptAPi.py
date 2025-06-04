@@ -178,19 +178,26 @@ class GPT:
             "gpt-3.5-turbo", [system_message, assistant_message, user_message]
         ).replace('"', "")
 
-    def firts_comment_quick_cleaning(self, theme, characters=90):
+    def first_comment_quick_cleaning(self, theme, characters=90):
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)
         assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
         user_message = self.create_message(
             "user",
             f"""
-            Generate a short and engaging first comment for a video about "{theme}". 
-            The comment must be written in **first person**, as if it were posted directly by the company. 
-            It should feel **authentic, friendly, and natural**, avoiding anything that sounds like marketing or spam. 
-            Make it **personal** and end with a **simple, direct question** that invites the audience to interact in the comments (e.g., "What do you think about it?" or "Would you try this?").
-            Use only **one emoji** at the end if appropriate. 
-            Keep it within {characters} characters.
-            """,
+            Create a short and engaging first comment for a video about "{theme}" for Quick Cleaning. 
+            The comment should match one of these styles:
+            1️⃣ Just hashtags (e.g., #QuickCleaning #ChicagoClean #HouseCleaning).
+            2️⃣ A short phrase plus a link (e.g., "Want to skip the wait? Visit: www.quickcleaning.com").
+            3️⃣ A short question to boost engagement (e.g., "What’s the dirtiest room in your house right now?").
+            4️⃣ A simple call to action (e.g., "Want to schedule a weekly cleaning? Message us 'OFFICE' for a quote.").
+            
+            - Must be in **first person**, as if written directly by the company.
+            - Keep it **authentic, friendly, and personal**, avoiding generic marketing language.
+            - Use **at most one emoji** if it feels natural.
+            - Stay within {characters} characters.
+            - Keep it short and catchy.
+            - Format it in a way that’s natural for platforms like Facebook and LinkedIn.
+            """
         )
         return self.generate_response(
             "gpt-3.5-turbo", [system_message, assistant_message, user_message]
