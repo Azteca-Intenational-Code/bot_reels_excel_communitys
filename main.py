@@ -16,7 +16,7 @@ def run_bot():
 
     # Configuración
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    plantilla_path = os.path.join(BASE_DIR, "Archivo de prueba carrusel para Niyi.xlsx")
+    plantilla_path = os.path.join(BASE_DIR, "Archivo de prueba reels para Niyi.xlsx")
     fecha_actual = datetime.today()
     # reels_por_campaña = 2
     carpeta_destino = os.path.join(BASE_DIR, "excel_campañas")
@@ -36,11 +36,11 @@ def run_bot():
         result = session.execute(sql_text("SELECT campaign, commercial_services, residential_services, language FROM campaign"))
         rows = result.fetchall()
 
-    # rows = [row for row in rows if row[0].strip().lower() == "quick cleaning"]
+    rows = [row for row in rows if row[0].strip().lower() == "quick cleaning"]
 
-    # if not rows:
-    #     print("⚠️ La campaña 'Quick Cleaning' no fue encontrada en la base de datos.")
-    #     exit()
+    if not rows:
+        print("⚠️ La campaña 'Quick Cleaning' no fue encontrada en la base de datos.")
+        exit()
 
 
     dias_semana = {
@@ -166,147 +166,136 @@ def run_bot():
             print(f"📝 Descripción: {descripcion}")
             print(f"🏷️ Hashtags: {hashtags}")
             print(f"🎵 Sonido: {sonido}")
-            
-        reels_generados = 0
-        while reels_generados < reels_por_campaña:
-            opciones_servicios = []
-            if commercial_services:
-                opciones_servicios.append(commercial_services)
-            if residential_services:
-                opciones_servicios.append(residential_services)
-            if not opciones_servicios:
-                print(f"⚠️ No hay servicios en {campaign_name}")
-                break
 
-            gpt = GPT({
-                "service": servicio,
-                "campaign": campaign_key,
-                "lang": lang.lower(),
-                "tipo": tipo,
-                "descripcion": descripcion,
-                "hashtags": hashtags,
-                "sonido": sonido,
-                "canal": canal,
-                "dia": dia
-            })
+            # gpt = GPT({
+            #     "service": servicio,
+            #     "campaign": campaign_key,
+            #     "lang": lang.lower(),
+            #     "tipo": tipo,
+            #     "descripcion": descripcion,
+            #     "hashtags": hashtags,
+            #     "sonido": sonido,
+            #     "canal": canal,
+            #     "dia": dia
+            # })
 
-            if campaign_key == "osceola_fence_corporation":
-                theme = gpt.theme_osceola()
-                data = {
-                    "Text": gpt.copy_osceola(theme, 100),
-                    "Document title": gpt.document_title_osceola(theme),
-                    "Youtube Video Title": gpt.youtube_video_title_osceola(theme, 40),
-                    "Youtube Video Tags": gpt.youtube_video_tags_osceola(theme),
-                    "First Comment Text": gpt.firts_comment_osceola(theme, 50),
-                    "TikTok Title": gpt.tikTok_title_osceola(theme, 50),
-                }
+            # if campaign_key == "osceola_fence_corporation":
+            #     theme = gpt.theme_osceola()
+            #     data = {
+            #         "Text": gpt.copy_osceola(theme, 100),
+            #         "Document title": gpt.document_title_osceola(theme),
+            #         "Youtube Video Title": gpt.youtube_video_title_osceola(theme, 40),
+            #         "Youtube Video Tags": gpt.youtube_video_tags_osceola(theme),
+            #         "First Comment Text": gpt.firts_comment_osceola(theme, 50),
+            #         "TikTok Title": gpt.tikTok_title_osceola(theme, 50),
+            #     }
 
-            elif campaign_key == "quick_cleaning":
-                theme = gpt.theme_quick_cleaning()
-                data = {
-                    "Text": gpt.copy_quick_cleaning(theme, 100),
-                    "Document title": gpt.document_title_quick_cleaning(theme),
-                    "Youtube Video Title": gpt.youtube_video_title_quick_cleaning(theme),
-                    "Youtube Video Tags": gpt.youtube_video_tags_quick_cleaning(theme),
-                    "First Comment Text": gpt.first_comment_quick_cleaning(theme, 50),
-                    "TikTok Title": gpt.tikTok_title_quick_cleaning(theme, 50),
-                }
+            # elif campaign_key == "quick_cleaning":
+            #     theme = gpt.theme_quick_cleaning()
+            #     data = {
+            #         "Text": gpt.copy_quick_cleaning(theme, 100),
+            #         "Document title": gpt.document_title_quick_cleaning(theme),
+            #         "Youtube Video Title": gpt.youtube_video_title_quick_cleaning(theme),
+            #         "Youtube Video Tags": gpt.youtube_video_tags_quick_cleaning(theme),
+            #         "First Comment Text": gpt.first_comment_quick_cleaning(theme, 50),
+            #         "TikTok Title": gpt.tikTok_title_quick_cleaning(theme, 50),
+            #     }
 
-            elif campaign_key == "elite_chicago_spa":
-                theme = gpt.theme_elite_spa()
-                data = {
-                    "Text": gpt.copy_elite_spa(theme, 100),
-                    "Document title": gpt.document_title_elite_spa(theme),
-                    "Youtube Video Title": gpt.youtube_video_title_elite_spa(theme),
-                    "Youtube Video Tags": gpt.youtube_video_tags_elite_spa(theme),
-                    "First Comment Text": gpt.firts_comment_elite_spa(theme, 50),
-                    "TikTok Title": gpt.tikTok_title_elite_spa(theme, 50),
-                }
+            # elif campaign_key == "elite_chicago_spa":
+            #     theme = gpt.theme_elite_spa()
+            #     data = {
+            #         "Text": gpt.copy_elite_spa(theme, 100),
+            #         "Document title": gpt.document_title_elite_spa(theme),
+            #         "Youtube Video Title": gpt.youtube_video_title_elite_spa(theme),
+            #         "Youtube Video Tags": gpt.youtube_video_tags_elite_spa(theme),
+            #         "First Comment Text": gpt.firts_comment_elite_spa(theme, 50),
+            #         "TikTok Title": gpt.tikTok_title_elite_spa(theme, 50),
+            #     }
 
-            elif campaign_key == "lopez_y_lopez_abogados":
-                theme = gpt.theme_lopez_abogados()
-                data = {
-                    "Text": gpt.copy_lopez_abogados(theme, 100),
-                    "Document title": gpt.document_title_lopez_abogados(theme),
-                    "Youtube Video Title": gpt.youtube_video_title_lopez_abogados(theme),
-                    "Youtube Video Tags": gpt.youtube_video_tags_lopez_abogados(theme),
-                    "First Comment Text": gpt.firts_comment_lopez_abogados(theme, 50),
-                    "TikTok Title": gpt.tikTok_title_lopez_abogados(theme, 50),
-                }
+            # elif campaign_key == "lopez_y_lopez_abogados":
+            #     theme = gpt.theme_lopez_abogados()
+            #     data = {
+            #         "Text": gpt.copy_lopez_abogados(theme, 100),
+            #         "Document title": gpt.document_title_lopez_abogados(theme),
+            #         "Youtube Video Title": gpt.youtube_video_title_lopez_abogados(theme),
+            #         "Youtube Video Tags": gpt.youtube_video_tags_lopez_abogados(theme),
+            #         "First Comment Text": gpt.firts_comment_lopez_abogados(theme, 50),
+            #         "TikTok Title": gpt.tikTok_title_lopez_abogados(theme, 50),
+            #     }
 
-            elif campaign_key.startswith("botánica"):
-                theme = gpt.theme_botanica()
-                data = {
-                    "Text": gpt.copy_botanica(theme, 100),
-                    "Document title": gpt.document_title_botanica(theme),
-                    "Youtube Video Title": gpt.youtube_video_title_botanica(theme, 50),
-                    "Youtube Video Tags": gpt.youtube_video_tags_botanica(theme),
-                    "First Comment Text": gpt.firts_comment_botanica(theme, 50),
-                    "TikTok Title": gpt.tikTok_title_botanica(theme, 50),
-                }
+            # elif campaign_key.startswith("botánica"):
+            #     theme = gpt.theme_botanica()
+            #     data = {
+            #         "Text": gpt.copy_botanica(theme, 100),
+            #         "Document title": gpt.document_title_botanica(theme),
+            #         "Youtube Video Title": gpt.youtube_video_title_botanica(theme, 50),
+            #         "Youtube Video Tags": gpt.youtube_video_tags_botanica(theme),
+            #         "First Comment Text": gpt.firts_comment_botanica(theme, 50),
+            #         "TikTok Title": gpt.tikTok_title_botanica(theme, 50),
+            #     }
 
-            elif campaign_key.startswith("botanica"):
-                theme = gpt.theme_botanica()
-                data = {
-                    "Text": gpt.copy_botanica(theme, 100),
-                    "Document title": gpt.document_title_botanica(theme),
-                    "Youtube Video Title": gpt.youtube_video_title_botanica(theme, 50),
-                    "Youtube Video Tags": gpt.youtube_video_tags_botanica(theme),
-                    "First Comment Text": gpt.firts_comment_botanica(theme, 50),
-                    "TikTok Title": gpt.tikTok_title_botanica(theme, 50),
-                }
+            # elif campaign_key.startswith("botanica"):
+            #     theme = gpt.theme_botanica()
+            #     data = {
+            #         "Text": gpt.copy_botanica(theme, 100),
+            #         "Document title": gpt.document_title_botanica(theme),
+            #         "Youtube Video Title": gpt.youtube_video_title_botanica(theme, 50),
+            #         "Youtube Video Tags": gpt.youtube_video_tags_botanica(theme),
+            #         "First Comment Text": gpt.firts_comment_botanica(theme, 50),
+            #         "TikTok Title": gpt.tikTok_title_botanica(theme, 50),
+            #     }
 
-            elif campaign_key.startswith("amarres_chicago"):
-                theme = gpt.theme_botanica()
-                data = {
-                    "Text": gpt.copy_botanica(theme, 100),
-                    "Document title": gpt.document_title_botanica(theme),
-                    "Youtube Video Title": gpt.youtube_video_title_botanica(theme, 50),
-                    "Youtube Video Tags": gpt.youtube_video_tags_botanica(theme),
-                    "First Comment Text": gpt.firts_comment_botanica(theme, 50),
-                    "TikTok Title": gpt.tikTok_title_botanica(theme, 50),
-                }
+            # elif campaign_key.startswith("amarres_chicago"):
+            #     theme = gpt.theme_botanica()
+            #     data = {
+            #         "Text": gpt.copy_botanica(theme, 100),
+            #         "Document title": gpt.document_title_botanica(theme),
+            #         "Youtube Video Title": gpt.youtube_video_title_botanica(theme, 50),
+            #         "Youtube Video Tags": gpt.youtube_video_tags_botanica(theme),
+            #         "First Comment Text": gpt.firts_comment_botanica(theme, 50),
+            #         "TikTok Title": gpt.tikTok_title_botanica(theme, 50),
+            #     }
 
-            else:
-                print(f"⚠️ Campaña '{campaign_key}' no tiene métodos aún.")
-                continue
+            # else:
+            #     print(f"⚠️ Campaña '{campaign_key}' no tiene métodos aún.")
+            #     continue
 
-            print("📥 Texto (Text):", data["Text"])
-            print("📄 Título:", data["Document title"])
-            plataforma = random.choice(["youtube shorts", "instagram reels", "tiktok"])
+            # print("📥 Texto (Text):", data["Text"])
+            # print("📄 Título:", data["Document title"])
+            # plataforma = random.choice(["youtube shorts", "instagram reels", "tiktok"])
 
-            try:
-                print("🚀 Ejecutando bot 2...")
+            # try:
+            #     print("🚀 Ejecutando bot 2...")
 
-                args = [
-                    str(data.get("Text", "")),            # tema
-                    str(plataforma),                      # plataforma
-                    str(data.get("Document title", "")),  # descripcion
-                    str(campaign_key),                    # campaign_key
-                    str(lang),                            # language
-                    str(canal),                           # canal
-                    str(tipo),                            # tipo
-                    str(sonido),                          # sonido
-                    str(main_cta_final),                  # main_cta
-                    str(servicio),                         # servicio
-                    str(id_contenido)
-                ]
+            #     args = [
+            #         str(data.get("Text", "")),            # tema
+            #         str(plataforma),                      # plataforma
+            #         str(data.get("Document title", "")),  # descripcion
+            #         str(campaign_key),                    # campaign_key
+            #         str(lang),                            # language
+            #         str(canal),                           # canal
+            #         str(tipo),                            # tipo
+            #         str(sonido),                          # sonido
+            #         str(main_cta_final),                  # main_cta
+            #         str(servicio),                         # servicio
+            #         str(id_contenido)
+            #     ]
 
-                print("📦 Argumentos pasados a subprocess:", args)
+            #     print("📦 Argumentos pasados a subprocess:", args)
 
-                subprocess.run(
-                    ["python", "main.py"] + args,
-                    cwd=r"C:\Users\Programador2\Documents\Antonio Barreto\Communitys\bot_creacion_reels",
-                    check=True,
-                    timeout=1800
-                )
+            #     subprocess.run(
+            #         ["python", "main.py"] + args,
+            #         cwd=r"C:\Users\Programador2\Documents\Antonio Barreto\Communitys\bot_creacion_reels",
+            #         check=True,
+            #         timeout=1800
+            #     )
 
-            except subprocess.CalledProcessError as e:
-                print(f"❌ Error al ejecutar bot 2: {e}")
-                break
+            # except subprocess.CalledProcessError as e:
+            #     print(f"❌ Error al ejecutar bot 2: {e}")
+            #     continue
 
 
-            post_generados += 1
+        post_generados += 1
 
         print("📂 Generando Excel desde base de datos...")
         with SessionLocal() as session:
@@ -374,7 +363,16 @@ def run_bot():
                 comentario = gpt.comment_from_title(f"{campaign_key.title()} Video")
 
                 for row in range(2, ws.max_row + 1):
-                    if not ws.cell(row=row, column=idx_text).value:
+                    canal_limpio = canal_db.strip().lower()
+
+                    # Si ya tiene texto, pasamos a la siguiente fila
+                    if ws.cell(row=row, column=idx_text).value:
+                        continue
+
+                    # Si es Story, no agregamos texto pero sí reservamos la fila
+                    if "story" in canal_limpio:
+                        ws.cell(row=row, column=idx_text).value = ""
+                    else:
                         ws.cell(row=row, column=idx_text).value = descripcion
                         ws.cell(row=row, column=idx_date).value = fecha_reel.strftime("%Y-%m-%d")
                         ws.cell(row=row, column=idx_title).value = str(post_generados + 1)
@@ -429,17 +427,24 @@ def run_bot():
                         post_generados += 1
                         break
 
-
-            # ✅ Elimina filas vacías (donde la celda 'Text' está vacía)
+            # ✅ Elimina filas vacías (donde la celda 'Text' está vacía menos las que son Story)
             max_row = ws.max_row
             for row in range(max_row, 1, -1):
-                if not ws.cell(row=row, column=idx_text).value:
+                instagram_type = ws.cell(row=row, column=col_idx_map.get("Instagram Post Type", 0)).value or ""
+                facebook_type = ws.cell(row=row, column=col_idx_map.get("Facebook Post Type", 0)).value or ""
+
+                if (
+                    not ws.cell(row=row, column=idx_text).value and
+                    "story" not in instagram_type.lower() and
+                    "story" not in facebook_type.lower()
+                ):
                     ws.delete_rows(row)
+
             # Guarda Excel normal
             wb.save(excel_path)
             print(f"📊 Excel guardado: {excel_path}")
 
-            # Convierte como CSV duplicando los datos del Excel
+           # Convierte como CSV duplicando los datos del Excel
             csv_path = excel_path.replace(".xlsx", ".csv")
             with open(csv_path, "w", encoding="utf-8", newline="") as f:
                 from csv import writer
@@ -449,10 +454,20 @@ def run_bot():
                 csv_writer.writerow([cell.value for cell in ws[1]])
 
                 # Escribir filas
-                for row in ws.iter_rows(min_row=2, values_only=True):
-                    csv_writer.writerow(row)
+                for row in ws.iter_rows(min_row=2, values_only=False):  # Cambiado a False para poder acceder a las celdas
+                    # Verificar si es Story
+                    instagram_type = (row[headers.index("Instagram Post Type")].value or "").lower()
+                    facebook_type = (row[headers.index("Facebook Post Type")].value or "").lower()
+                    
+                    # Si es tipo Story, eliminar el valor de "Text"
+                    if "story" in instagram_type or "story" in facebook_type:
+                        row[headers.index("Text")].value = ""  # Eliminar el texto en la columna "Text"
+                    
+                    # Escribir la fila modificada en el CSV
+                    csv_writer.writerow([cell.value for cell in row])
 
             print(f"📄 También guardado como CSV: {csv_path}")
+
 
     print("\n✅ Todas las campañas han sido procesadas.")
 
