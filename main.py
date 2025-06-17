@@ -2,7 +2,7 @@ import subprocess
 
 import uvicorn
 from config import SessionLocal
-from sqlalchemy import text as sql_text
+from sqlalchemy import bindparam, text as sql_text
 from GptAPi import GPT
 from openpyxl import load_workbook
 from calendar import month_name
@@ -123,22 +123,19 @@ def run_bot():
             contenido_programado = result.fetchall()
 
 
-        # 🕓 Filtrar por día actual
-        dia_actual = datetime.today().strftime('%A').lower()  # Ej: "wednesday"
-        dia_actual_es = {
-            "monday": "lunes",
-            "tuesday": "martes",
-            "wednesday": "miércoles",
-            "thursday": "jueves",
-            "friday": "viernes",
-            "saturday": "sábado",
-            "sunday": "domingo"
-        }[dia_actual]
+        # Obtener solo el contenido del día actual
+        idx_actual = datetime.today().weekday()
+        dia_actual = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"][idx_actual]
 
-        contenido_programado = [f for f in contenido_programado if f[1].lower() == dia_actual_es]
+        contenido_dias = [f for f in contenido_programado if f[1].strip().lower() == dia_actual]
 
-        if not contenido_programado:
-            print(f"⚠️ No hay contenido programado para '{campaign_key}' el día {dia_actual_es}.")
+        if not contenido_dias:
+            print(f"⚠️ No hay contenido para el día actual: {dia_actual}")
+            exit()
+
+
+        if not contenido_dias:
+            print(f"⚠️ No hay contenido para los días: {dia_actual}")
             exit()
         
         result = session.execute(sql_text("""
@@ -157,7 +154,7 @@ def run_bot():
             cta_elegidos = random.sample(cta_list, k=min(len(cta_list), random.choice([1, 2])))
             main_cta_final = ", ".join(cta_elegidos)
 
-        for fila in contenido_programado:
+        for fila in contenido_dias:
             id_contenido, dia, canal, servicio, tipo, descripcion, hashtags, sonido = fila
 
             print(f"\n🎬 Generando video para:")
@@ -176,7 +173,8 @@ def run_bot():
                 "hashtags": hashtags,
                 "sonido": sonido,
                 "canal": canal,
-                "dia": dia
+                "dia": dia,
+                "hashtags": hashtags
             })
 
             if campaign_key == "osceola_fence_corporation":
@@ -264,36 +262,36 @@ def run_bot():
             print("📄 Título:", data["Document title"])
             plataforma = random.choice(["youtube shorts", "instagram reels", "tiktok"])
 
-            try:
-                print("🚀 Ejecutando bot 2...")
+            # try:
+            #     print("🚀 Ejecutando bot 2...")
 
-                args = [
-                    str(data.get("Text", "")),            # tema
-                    str(plataforma),                      # plataforma
-                    str(data.get("Document title", "")),  # descripcion
-                    str(campaign_key),                    # campaign_key
-                    str(lang),                            # language
-                    str(canal),                           # canal
-                    str(tipo),                            # tipo
-                    str(sonido),                          # sonido
-                    str(main_cta_final),                  # main_cta
-                    str(servicio),                         # servicio
-                    str(id_contenido)
-                ]
+            #     args = [
+            #         str(data.get("Text", "")),            # tema
+            #         str(plataforma),                      # plataforma
+            #         str(descripcion),                        # descripcion
+            #         str(campaign_key),                    # campaign_key
+            #         str(lang),                            # language
+            #         str(canal),                           # canal
+            #         str(tipo),                            # tipo
+            #         str(sonido),                          # sonido
+            #         str(main_cta_final),                  # main_cta
+            #         str(servicio),                         # servicio
+            #         str(id_contenido),
+            #         str(hashtags)
+            #     ]
 
-                print("📦 Argumentos pasados a subprocess:", args)
+            #     print("📦 Argumentos pasados a subprocess:", args)
 
-                subprocess.run(
-                    ["python", "main.py"] + args,
-                    cwd=r"C:\Users\Programador2\Documents\Antonio Barreto\Communitys\bot_creacion_reels",
-                    check=True,
-                    timeout=1800
-                )
+            #     subprocess.run(
+            #         ["python", "main.py"] + args,
+            #         cwd=r"C:\Users\Programador2\Documents\Antonio Barreto\Communitys\bot_creacion_reels",
+            #         check=True,
+            #         timeout=1800
+            #     )
 
-            except subprocess.CalledProcessError as e:
-                print(f"❌ Error al ejecutar bot 2: {e}")
-                continue
-
+            # except subprocess.CalledProcessError as e:
+            #     print(f"❌ Error al ejecutar bot 2: {e}")
+            #     continue
 
         post_generados += 1
 
@@ -311,15 +309,21 @@ def run_bot():
             for i, fila_db in enumerate(resultados):
                 descripcion, plataforma, url, canal_db = fila_db
                 fecha_reel = fecha_actual
-                dia_nombre = dias_semana[fecha_reel.weekday()]
 
+                 # Obtener día actual en inglés y español desde la lista de tuplas
+                weekday_index = fecha_reel.weekday()  # 0 = lunes, ..., 6 = domingo
+                dia_actual = dias_semana[weekday_index]
+
+                # Consulta con IN para aceptar ambos idiomas
                 horario_query = sql_text("""
                     SELECT hour FROM schedules 
-                    WHERE platform_video = :plat AND day = :dia
-                """)
-                schedules = session.execute(horario_query, {"plat": plataforma, "dia": dia_nombre}).fetchall()
+                    WHERE platform_video = :plat AND day IN :dias
+                """).bindparams(bindparam("dias", expanding=True))
+                
+                schedules = session.execute(horario_query, {"plat": plataforma, "dias": [dia_actual]}).fetchall()
 
                 ahora = datetime.now().time()
+
 
                 if schedules:
                     horarios_validos = [h[0] for h in schedules]
@@ -360,7 +364,7 @@ def run_bot():
                     hora_final = horario_elegido.strftime("%H:%M:%S")
 
                 gpt = GPT({"service": "comentario", "campaign": campaign_key, "lang": lang.lower()})
-                comentario = gpt.comment_from_title(f"{campaign_key.title()} Video")
+                comentario = data["First Comment Text"]
 
                 for row in range(2, ws.max_row + 1):
                     canal_limpio = canal_db.strip().lower()
@@ -380,6 +384,21 @@ def run_bot():
                         ws.cell(row=row, column=idx_yt_tags).value = str(post_generados + 1)
                         ws.cell(row=row, column=idx_fb_title).value = str(post_generados + 1)
                         ws.cell(row=row, column=idx_tiktok).value = str(post_generados + 1)
+                        
+                        if campaign_key == "quick_cleaning":
+                            comentario = gpt.first_comment_quick_cleaning(theme, 90)
+                        elif campaign_key == "elite_chicago_spa":
+                            comentario = gpt.firts_comment_elite_spa(theme, 90)
+                        elif campaign_key == "lopez_y_lopez_abogados":
+                            comentario = gpt.firts_comment_lopez_abogados(theme, 90)
+                        elif campaign_key.startswith("botanica") or campaign_key.startswith("amarres_chicago"):
+                            comentario = gpt.firts_comment_botanica(theme, 90)
+                        elif campaign_key == "osceola_fence_corporation":
+                            comentario = gpt.firts_comment_osceola(theme, 90)
+                        else:
+                            comentario = gpt.comment_from_title(theme, campaign_name=campaign_key, characters=90)
+
+                        # Escribir el comentario generado a la celda
                         ws.cell(row=row, column=idx_comment).value = comentario
                         ws.cell(row=row, column=idx_picture).value = url
                         ws.cell(row=row, column=idx_time).value = hora_final
@@ -482,4 +501,5 @@ def run_bot():
         print(f"❌ Error al ejecutar bot 3: {e}")
     
 if __name__ == '__main__':
-    uvicorn.run("fastApi:app", host="0.0.0.0", port=8000, reload=False, access_log=False)
+    # uvicorn.run("fastApi:app", host="0.0.0.0", port=8000, reload=False, access_log=False)
+    run_bot()

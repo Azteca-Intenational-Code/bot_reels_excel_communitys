@@ -94,20 +94,34 @@ class GPT:
     def firts_comment_osceola(self, theme, characters=90):
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)
         assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
-        user_message = self.create_message(
-            "user",
+
+        estilos = [
+            # Solo hashtags (profesionales)
             f"""
-    Generate a short and engaging first comment for a video about "{theme}". 
-    The comment must be written in **first person**, as if it were posted directly by the company. 
-    It should feel **authentic, friendly, and natural**, avoiding anything that sounds like marketing or spam. 
-    Make it **personal** and end with a **simple, direct question** that invites the audience to interact in the comments (e.g., "What do you think about it?" or "Would you try this?").
-    Use only **one emoji** at the end if appropriate. 
-    Keep it within {characters} characters.
-    """
-        )
-        return self.generate_response(
-            "gpt-4", [system_message, assistant_message, user_message]
-        ).replace('"', "")
+            Write a first comment for "{theme}" using only professional hashtags relevant to fencing, security, and Chicago. 
+            Use 2 line breaks above. No text or emojis. Max {characters} characters.
+            Use **no more than 4 relevant hashtags** related to cleaning.
+            """,
+
+            # Texto + hashtags
+            f"""
+            You are Osceola Fence. Write a first comment for a video about "{theme}" in first person plural (we/our team). 
+            Use a serious but friendly tone. Include a short statement + 2 professional hashtags. One emoji allowed.
+            Max {characters} characters.
+            """,
+
+            # Solo texto (sin hashtags)
+            f"""
+            Write a first comment from Osceola Fence about "{theme}" in first person plural. 
+            The message should express confidence and professionalism. Avoid hashtags.  
+            Use a clean sentence with 1 emoji if appropriate. Max {characters} characters.
+            """
+        ]
+
+        prompt = random.choice(estilos)
+        user_message = self.create_message("user", prompt)
+
+        return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).strip('"')
 
 
     def tikTok_title_osceola(self, theme, characters=50):
@@ -181,27 +195,70 @@ class GPT:
     def first_comment_quick_cleaning(self, theme, characters=90):
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)
         assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
-        user_message = self.create_message(
-            "user",
-            f"""
-            Create a short and engaging first comment for a video about "{theme}" for Quick Cleaning. 
-            The comment should match one of these styles:
-            1️⃣ Just hashtags (e.g., #QuickCleaning #ChicagoClean #HouseCleaning).
-            2️⃣ A short phrase plus a link (e.g., "Want to skip the wait? Visit: www.quickcleaning.com").
-            3️⃣ A short question to boost engagement (e.g., "What’s the dirtiest room in your house right now?").
-            4️⃣ A simple call to action (e.g., "Want to schedule a weekly cleaning? Message us 'OFFICE' for a quote.").
-            
-            - Must be in **first person**, as if written directly by the company.
-            - Keep it **authentic, friendly, and personal**, avoiding generic marketing language.
-            - Use **at most one emoji** if it feels natural.
-            - Stay within {characters} characters.
-            - Keep it short and catchy.
-            - Format it in a way that’s natural for platforms like Facebook and LinkedIn.
-            """
-        )
-        return self.generate_response(
-            "gpt-4", [system_message, assistant_message, user_message]
-        ).replace('"', "")
+
+        prompt_hashtags_only = f"""
+        You are Quick Cleaning — a cleaning company in Chicago.
+
+        Write the **first comment** on your own video about the topic: "{theme}".
+        This comment is posted by the **official Quick Cleaning account** — not a viewer.
+
+        ✳️ Style: Hashtags only.
+        - Leave two blank lines at the top.
+        - Then insert either 👇👇👇 or … on a single line.
+        - On the next line, write 3–4 original, rotating hashtags about cleaning, move-outs, freshness, etc.
+        - Avoid common combos like #FreshStart + #SparklingClean. Make them sound new.
+        - Do **not** include any text or emojis (except 👇👇👇 or …).
+        
+        ✅ Max {characters} characters.
+        ✅ Must look like it was written by Quick Cleaning.
+        ✅ Make sure hashtags are fresh and different each time.
+        """
+
+        prompt_question_plus_hashtags = f"""
+        You are Quick Cleaning — a cleaning company in Chicago.
+
+        Write the **first comment** on your own video about the topic: "{theme}".
+        This comment is posted by the **official Quick Cleaning account** — not a viewer.
+
+        ✳️ Style: Question + hashtags.
+        - Begin with a **creative and unusual question** in first person plural (e.g., "Need help with the moving chaos?" or "Tired of the packing mess?").
+        - The tone should rotate between funny, helpful, urgent, or casual.
+        - Add 1–2 rotating hashtags at the end.
+        - One emoji max, and not the same each time.
+        - Avoid phrases like "fresh start" or "sparkling clean" — use new wording.
+
+        ✅ Max {characters} characters.
+        ✅ Do not use links.
+        ✅ Must feel dynamic and different on every use.
+        """
+
+        prompt_direct_call_to_action = f"""
+        You are Quick Cleaning — a cleaning company in Chicago.
+
+        Write the **first comment** on your own video about the topic: "{theme}".
+        This comment is posted by the **official Quick Cleaning account** — not a viewer.
+
+        ✳️ Style: Direct call to action.
+        - Write a short, **highly varied CTA** using first person plural.
+        - Every version should feel different: some can be direct, others playful or energetic.
+        - Use **only one emoji**, and vary it each time.
+        - Do not include hashtags or links.
+        - Avoid repeating phrases like "let us handle it" or "we’ve got your back".
+
+        ✅ Max {characters} characters.
+        ✅ Must sound like a real brand post — unique and informal.
+        """
+
+        estilos = [
+            prompt_hashtags_only,
+            prompt_question_plus_hashtags,
+            prompt_direct_call_to_action
+        ]
+
+        selected_prompt = random.choice(estilos)
+        user_message = self.create_message("user", selected_prompt)
+
+        return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).strip('"')
 
     def tikTok_title_quick_cleaning(self, theme, characters=50):
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)
@@ -271,23 +328,36 @@ class GPT:
             "gpt-4", [system_message, assistant_message, user_message]
         ).replace('"', "")
         
-    def firts_comment_elite_spa(self, theme, characters=90):        
+    def firts_comment_elite_spa(self, theme, characters=90):
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)
         assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
-        user_message = self.create_message(
-            "user",
+
+        estilos = [
+            # Solo hashtags
             f"""
-            Generate a short and engaging first comment for a video about "{theme}". 
-            The comment must be written in **first person**, as if it were posted directly by the company. 
-            It should feel **authentic, friendly, and natural**, avoiding anything that sounds like marketing or spam. 
-            Make it **personal** and end with a **simple, direct question** that invites the audience to interact in the comments (e.g., "What do you think about it?" or "Would you try this?").
-            Use only **one emoji** at the end if appropriate. 
-            Keep it within {characters} characters.
+            You are Elite Chicago Spa. Write a first comment for a video about "{theme}" using only soft, elegant hashtags about self-care, beauty, and wellness.  
+            Leave 2 line breaks above. No emojis. Max {characters} characters.
+            Use **no more than 4 relevant hashtags** related to cleaning.
             """,
-        )
-        return self.generate_response(
-            "gpt-4", [system_message, assistant_message, user_message]
-        ).replace('"', "")
+
+            # Texto + hashtags
+            f"""
+            Write a first comment from Elite Chicago Spa for the topic "{theme}". 
+            Use a warm tone in first person plural. Write a gentle phrase and include 1–2 spa-related hashtags. Optional: 1 emoji. Max {characters} characters.
+            """,
+
+            # Solo texto
+            f"""
+            Write a first comment as Elite Chicago Spa about "{theme}" using first person plural.  
+            Focus on comfort, beauty, and care. Avoid hashtags. Include a soft emoji if needed. Max {characters} characters.
+            """
+        ]
+
+        prompt = random.choice(estilos)
+        user_message = self.create_message("user", prompt)
+
+        return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).strip('"')
+
         
     def tikTok_title_elite_spa(self, theme, characters=50):
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)
@@ -360,20 +430,33 @@ class GPT:
     def firts_comment_lopez_abogados(self, theme, characters=90):
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)
         assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
-        user_message = self.create_message(
-            "user",
+
+        estilos = [
+            # Solo hashtags (legales)
             f"""
-    Generate a **formal and trustworthy first comment** for a video about "{theme}". 
-    The comment must be written in **first person**, reflecting the voice of a **professional law firm**. 
-    It should communicate respect, knowledge, and credibility, while inviting users to engage through a **thought-provoking legal question or insight**. 
-    Avoid casual or marketing phrases. Keep the tone serious but human. 
-    End with **one appropriate legal emoji** if relevant. 
-    Limit to {characters} characters.
-    """
-        )
-        return self.generate_response(
-            "gpt-4", [system_message, assistant_message, user_message]
-        ).replace('"', "")
+            Write a first comment for "{theme}" using only serious, professional hashtags related to legal services in Chicago.  
+            Leave 2 blank lines above. No emojis or extra text. Max {characters} characters.
+            Use **no more than 4 relevant hashtags** related to cleaning.
+            """,
+
+            # Texto + hashtags
+            f"""
+            You are López & López Abogados. Write a professional first comment about "{theme}" in first person plural.  
+            Use a short statement + 1–2 legal hashtags. One ⚖️ or 📜 emoji allowed. Max {characters} characters.
+            """,
+
+            # Solo texto
+            f"""
+            Write a serious and professional first comment from López & López Abogados for "{theme}".  
+            Keep a respectful and formal tone. Use first person plural. No hashtags. One legal emoji max. Max {characters} characters.
+            """
+        ]
+
+        prompt = random.choice(estilos)
+        user_message = self.create_message("user", prompt)
+
+        return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).strip('"')
+
 
     def tikTok_title_lopez_abogados(self, theme, characters=50):
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)
@@ -408,17 +491,41 @@ class GPT:
         return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).replace('"', "")
     
 
-    def comment_from_title(self, video_title):
+    def comment_from_title(self, video_title, campaign_name=None, characters=90):
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)
         assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
+
+        company_name = campaign_name or self.campaign
+
         user_message = self.create_message(
             "user",
-            f"Simula ser una persona real que acaba de ver un video con el título '{video_title}'. "
-            "Escribe un comentario corto y natural como si le hubiera gustado el contenido. "
-            "Debe sonar auténtico, cercano y generar interés en otros usuarios, usando un tono amigable. "
-            "No uses emojis ni hashtags. No repitas el título. Máximo 15 palabras."
+            f"""
+            You are writing a **first comment** for a video titled: "{video_title}".
+
+            This comment is posted by the official account of **{company_name}**, not a viewer or external person.
+
+            🎯 Objective:
+            Write a short and engaging comment as if it were made by the business itself — a brand voice.
+            It should sound like a direct message to the audience, with a friendly and clear tone.
+
+            ✅ Use one of the following formats:
+            1️⃣ Just hashtags  
+            2️⃣ A short phrase + website link  
+            3️⃣ A short question to spark engagement  
+            4️⃣ A simple call to action (e.g., "Message us 'QUICK' for a quote!")
+
+            📝 Instructions:
+            - Write in **first person plural**: “we”, “our team”, “contact us”, etc.
+            - Be friendly, short, and natural (not robotic).
+            - **Do not repeat the title**.
+            - Max {characters} characters.
+            - At most **one emoji**, only if it fits naturally.
+            - Keep it suitable for platforms like Facebook, TikTok, or YouTube Shorts.
+            """
         )
+
         return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).strip('"')
+
 
     def document_title_botanica(self, theme):
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)
@@ -453,17 +560,34 @@ class GPT:
     def firts_comment_botanica(self, theme, characters=90):
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)
         assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
-        user_message = self.create_message(
-            "user",
+
+        estilos = [
+            # Solo hashtags (espirituales)
             f"""
-    Genera un primer comentario para YouTube sobre "{theme}". 
-    Debe estar escrito en **primera persona**, como si fuera publicado directamente por la empresa botánica. 
-    El comentario debe sonar **auténtico, místico, humanizado** y **fomentar la interacción**, ya sea con una **pregunta espiritual o reflexión energética**. 
-    Debe parecer cercano, natural, sin parecer publicidad directa. 
-    Incluye **máximo 1 emoji** si aplica. Máximo {characters} caracteres.
-    """
-        )
-        return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).replace('"', "")
+            Escribe un primer comentario desde la perspectiva de una botánica mística para el tema "{theme}".  
+            Solo incluye hashtags relacionados con espiritualidad, amarres, energía, tarot, limpieza.  
+            Deja dos saltos de línea arriba. No agregues texto ni emojis. Máximo {characters} caracteres.
+            Utiliza **no más de 4 hashtags relevantes** relacionados con la limpieza.
+            """,
+
+            # Texto + hashtags
+            f"""
+            Eres una botánica espiritual. Escribe un comentario para el video sobre "{theme}" en primera persona plural.  
+            Incluye una frase con energía mística + 1–2 hashtags esotéricos. Máximo 1 emoji. Máximo {characters} caracteres.
+            """,
+
+            # Solo texto
+            f"""
+            Escribe un primer comentario para "{theme}" desde la cuenta oficial de una botánica.  
+            Usa primera persona plural. Hazlo reflexivo, energético, sin hashtags. Puedes cerrar con un emoji si aplica. Máximo {characters} caracteres.
+            """
+        ]
+
+        prompt = random.choice(estilos)
+        user_message = self.create_message("user", prompt)
+
+        return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).strip('"')
+
 
     def tikTok_title_botanica(self, theme, characters=50):
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)

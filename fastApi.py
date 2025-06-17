@@ -33,9 +33,11 @@ async def actualizar_excel(file: UploadFile, id_campaign: int = Form(...)):
         contents = await file.read()
         df = pd.read_excel(io.BytesIO(contents))
         actualizados = 0
+        insertados = 0
+        eliminados = 0
 
         with SessionLocal() as session:
-            # 🔍 Trae los registros actuales para esa campaña ordenados por ID
+            # 🔍 Traer registros actuales
             result = session.execute(sql_text("""
                 SELECT id FROM contenido_semanal
                 WHERE id_campaign = :id_campaign
@@ -43,12 +45,7 @@ async def actualizar_excel(file: UploadFile, id_campaign: int = Form(...)):
             """), {"id_campaign": id_campaign})
             registros = result.fetchall()
 
-            # 🔄 Recorre el DataFrame y actualiza uno a uno por ID
             for i, row in enumerate(df.itertuples()):
-                if i >= len(registros):
-                    break  # ⚠️ No hay más registros para actualizar
-
-                id_contenido = registros[i][0]
                 dia = str(row[1]).strip() if pd.notna(row[1]) else None
                 canal = str(row[2]).strip() if pd.notna(row[2]) else None
                 servicio = str(row[3]).strip() if pd.notna(row[3]) else None
@@ -58,33 +55,63 @@ async def actualizar_excel(file: UploadFile, id_campaign: int = Form(...)):
                 sonido_raw = str(row[7]).strip() if pd.notna(row[7]) else None
                 sonido = None if sonido_raw == "—" else sonido_raw
 
+                if i < len(registros):
+                    # 🔄 Actualizar
+                    session.execute(sql_text("""
+                        UPDATE contenido_semanal
+                        SET dia = :dia,
+                            canal = :canal,
+                            servicio = :servicio,
+                            tipo = :tipo,
+                            descripcion = :descripcion,
+                            hashtags = :hashtags,
+                            sonido = :sonido
+                        WHERE id = :id
+                    """), {
+                        "dia": dia,
+                        "canal": canal,
+                        "servicio": servicio,
+                        "tipo": tipo,
+                        "descripcion": descripcion,
+                        "hashtags": hashtags,
+                        "sonido": sonido,
+                        "id": registros[i][0]
+                    })
+                    actualizados += 1
+                else:
+                    # ➕ Insertar
+                    session.execute(sql_text("""
+                        INSERT INTO contenido_semanal (id_campaign, dia, canal, servicio, tipo, descripcion, hashtags, sonido)
+                        VALUES (:id_campaign, :dia, :canal, :servicio, :tipo, :descripcion, :hashtags, :sonido)
+                    """), {
+                        "id_campaign": id_campaign,
+                        "dia": dia,
+                        "canal": canal,
+                        "servicio": servicio,
+                        "tipo": tipo,
+                        "descripcion": descripcion,
+                        "hashtags": hashtags,
+                        "sonido": sonido
+                    })
+                    insertados += 1
+
+            # 🗑️ Eliminar registros sobrantes
+            if len(df) < len(registros):
+                ids_sobrantes = [r[0] for r in registros[len(df):]]
                 session.execute(sql_text("""
-                    UPDATE contenido_semanal
-                    SET dia = :dia,
-                        canal = :canal,
-                        servicio = :servicio,
-                        tipo = :tipo,
-                        descripcion = :descripcion,
-                        hashtags = :hashtags,
-                        sonido = :sonido
-                    WHERE id = :id
-                """), {
-                    "dia": dia,
-                    "canal": canal,
-                    "servicio": servicio,
-                    "tipo": tipo,
-                    "descripcion": descripcion,
-                    "hashtags": hashtags,
-                    "sonido": sonido,
-                    "id": id_contenido
-                })
-                actualizados += 1
+                    DELETE FROM contenido_semanal
+                    WHERE id IN :ids
+                """), {"ids": tuple(ids_sobrantes)})
+                eliminados = len(ids_sobrantes)
 
             session.commit()
-            return {"message": f"✅ Se actualizaron {actualizados} registros correctamente de la campaña {id_campaign}."}
+            return {
+                "message": f"✅ Se actualizaron {actualizados}, se insertaron {insertados} y se eliminaron {eliminados} registros para la campaña {id_campaign}."
+            }
 
     except Exception as e:
         return {"error": f"❌ Error al procesar Excel: {e}"}
+
 
     
 @app.get("/campaigns")
