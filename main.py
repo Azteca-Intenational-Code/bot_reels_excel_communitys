@@ -262,36 +262,36 @@ def run_bot():
             print("📄 Título:", data["Document title"])
             plataforma = random.choice(["youtube shorts", "instagram reels", "tiktok"])
 
-            # try:
-            #     print("🚀 Ejecutando bot 2...")
+            try:
+                print("🚀 Ejecutando bot 2...")
 
-            #     args = [
-            #         str(data.get("Text", "")),            # tema
-            #         str(plataforma),                      # plataforma
-            #         str(descripcion),                        # descripcion
-            #         str(campaign_key),                    # campaign_key
-            #         str(lang),                            # language
-            #         str(canal),                           # canal
-            #         str(tipo),                            # tipo
-            #         str(sonido),                          # sonido
-            #         str(main_cta_final),                  # main_cta
-            #         str(servicio),                         # servicio
-            #         str(id_contenido),
-            #         str(hashtags)
-            #     ]
+                args = [
+                    str(data.get("Text", "")),            # tema
+                    str(plataforma),                      # plataforma
+                    str(descripcion),                        # descripcion
+                    str(campaign_key),                    # campaign_key
+                    str(lang),                            # language
+                    str(canal),                           # canal
+                    str(tipo),                            # tipo
+                    str(sonido),                          # sonido
+                    str(main_cta_final),                  # main_cta
+                    str(servicio),                         # servicio
+                    str(id_contenido),
+                    str(hashtags)
+                ]
 
-            #     print("📦 Argumentos pasados a subprocess:", args)
+                print("📦 Argumentos pasados a subprocess:", args)
 
-            #     subprocess.run(
-            #         ["python", "main.py"] + args,
-            #         cwd=r"C:\Users\Programador2\Documents\Antonio Barreto\Communitys\bot_creacion_reels",
-            #         check=True,
-            #         timeout=1800
-            #     )
+                subprocess.run(
+                    ["python", "main.py"] + args,
+                    cwd=r"C:\Users\Programador2\Documents\Antonio Barreto\Communitys\bot_creacion_reels",
+                    check=True,
+                    timeout=1800
+                )
 
-            # except subprocess.CalledProcessError as e:
-            #     print(f"❌ Error al ejecutar bot 2: {e}")
-            #     continue
+            except subprocess.CalledProcessError as e:
+                print(f"❌ Error al ejecutar bot 2: {e}")
+                continue
 
         post_generados += 1
 
