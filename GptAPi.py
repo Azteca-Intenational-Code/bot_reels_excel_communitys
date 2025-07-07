@@ -35,7 +35,6 @@ class GPT:
 
     # ============================= OSCEOLA METHODS ==============================
 
-
     def copy_osceola(self, theme, characters=100):
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)
         assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
@@ -91,35 +90,69 @@ class GPT:
             "gpt-4", [system_message, assistant_message, user_message]
         ).replace('"', "")
 
-    def firts_comment_osceola(self, theme, characters=90):
+    def first_comment_osceola(self, theme, characters=90):
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)
         assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
 
+        prompt_hashtags_only = f"""
+        You are Osceola Fence — a fence manufacturing and installation company in Chicago.
+
+        Write the **first comment** on your own video about the topic: "{theme}".
+        This comment is posted by the **official Osceola Fence account** — not a viewer.
+
+        ✳️ Style: Hashtags only.
+        - Leave two blank lines at the top.
+        - Then insert either 👇👇👇 or … on a single line.
+        - On the next line, write 3–4 original, professional hashtags about fencing, security, custom installations, or Chicago.
+        - Do **not** use emojis or regular text (except 👇👇👇 or …).
+        - Avoid generic combos like #SecureHome or #FenceGoals — create varied, rotating tags.
+
+        ✅ Max {characters} characters.
+        ✅ Must feel like a branded, professional comment.
+        ✅ Make hashtags fresh and non-repetitive.
+        """
+
+        prompt_statement_plus_hashtags = f"""
+        You are Osceola Fence — a fence manufacturing and installation company in Chicago.
+
+        Write the **first comment** on your own video about the topic: "{theme}".
+        This comment is posted by the **official Osceola Fence account** — not a viewer.
+
+        ✳️ Style: Statement + hashtags.
+        - Begin with a short, confident sentence in first person plural (e.g., "We make your perimeter stronger." or "Our team delivers precision every time.").
+        - Maintain a serious but friendly tone.
+        - Add 1–2 rotating, professional hashtags at the end.
+        - Use **only one emoji** if relevant, and vary it in each version.
+
+        ✅ Max {characters} characters.
+        ✅ Do not include links.
+        ✅ Must sound professional and real.
+        """
+
+        prompt_direct_text = f"""
+        You are Osceola Fence — a fence manufacturing and installation company in Chicago.
+
+        Write the **first comment** on your own video about the topic: "{theme}".
+        This comment is posted by the **official Osceola Fence account** — not a viewer.
+
+        ✳️ Style: Short direct message.
+        - Use a single clean sentence in first person plural.
+        - Keep tone confident, professional, and human.
+        - No hashtags, no links.
+        - One emoji allowed if it adds value — vary it each time.
+
+        ✅ Max {characters} characters.
+        ✅ Avoid repetition or generic phrasing like "we’re here for you."
+        """
+
         estilos = [
-            # Solo hashtags (profesionales)
-            f"""
-            Write a first comment for "{theme}" using only professional hashtags relevant to fencing, security, and Chicago. 
-            Use 2 line breaks above. No text or emojis. Max {characters} characters.
-            Use **no more than 4 relevant hashtags** related to cleaning.
-            """,
-
-            # Texto + hashtags
-            f"""
-            You are Osceola Fence. Write a first comment for a video about "{theme}" in first person plural (we/our team). 
-            Use a serious but friendly tone. Include a short statement + 2 professional hashtags. One emoji allowed.
-            Max {characters} characters.
-            """,
-
-            # Solo texto (sin hashtags)
-            f"""
-            Write a first comment from Osceola Fence about "{theme}" in first person plural. 
-            The message should express confidence and professionalism. Avoid hashtags.  
-            Use a clean sentence with 1 emoji if appropriate. Max {characters} characters.
-            """
+            prompt_hashtags_only,
+            prompt_statement_plus_hashtags,
+            prompt_direct_text
         ]
 
-        prompt = random.choice(estilos)
-        user_message = self.create_message("user", prompt)
+        selected_prompt = random.choice(estilos)
+        user_message = self.create_message("user", selected_prompt)
 
         return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).strip('"')
 
@@ -328,33 +361,67 @@ class GPT:
             "gpt-4", [system_message, assistant_message, user_message]
         ).replace('"', "")
         
-    def firts_comment_elite_spa(self, theme, characters=90):
+    def first_comment_elite_spa(self, theme, characters=90):
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)
         assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
 
+        prompt_hashtags_only = f"""
+        You are Elite Chicago Spa — a spa focused on wellness, beauty, and self-care.
+
+        Write the **first comment** on your own video about the topic: "{theme}".
+        This comment is posted by the **official Elite Chicago Spa account** — not a viewer.
+
+        ✳️ Style: Hashtags only.
+        - Leave two blank lines at the top.
+        - Then insert either 👇👇👇 or … on a single line.
+        - On the next line, write 3–4 soft, elegant hashtags related to relaxation, skincare, wellness, and spa lifestyle.
+        - Do **not** use emojis or regular text (except 👇👇👇 or …).
+        - Avoid cliché combos like #SelfCareSunday — invent new, fresh expressions.
+
+        ✅ Max {characters} characters.
+        ✅ Make sure hashtags rotate and feel brand-consistent.
+        """
+
+        prompt_phrase_plus_hashtags = f"""
+        You are Elite Chicago Spa — a spa focused on wellness, beauty, and self-care.
+
+        Write the **first comment** on your own video about the topic: "{theme}".
+        This comment is posted by the **official Elite Chicago Spa account** — not a viewer.
+
+        ✳️ Style: Gentle phrase + hashtags.
+        - Start with a warm, caring sentence in first person plural (e.g., “We love creating calm in every session.”).
+        - Keep the tone soft, elegant, and nurturing.
+        - Add 1–2 rotating hashtags related to spa, skin, or relaxation.
+        - You may include **only one emoji**, and vary it each time.
+
+        ✅ Max {characters} characters.
+        ✅ No links. Avoid repetition.
+        """
+
+        prompt_soft_text_only = f"""
+        You are Elite Chicago Spa — a spa focused on wellness, beauty, and self-care.
+
+        Write the **first comment** on your own video about the topic: "{theme}".
+        This comment is posted by the **official Elite Chicago Spa account** — not a viewer.
+
+        ✳️ Style: Soft text only.
+        - Use first person plural voice (we/our).
+        - Write a short, nurturing sentence that communicates beauty, care, or peace.
+        - Do **not** include hashtags or links.
+        - Add one soft emoji if it enhances the message — vary it for each version.
+
+        ✅ Max {characters} characters.
+        ✅ The tone must feel premium, calm, and authentic.
+        """
+
         estilos = [
-            # Solo hashtags
-            f"""
-            You are Elite Chicago Spa. Write a first comment for a video about "{theme}" using only soft, elegant hashtags about self-care, beauty, and wellness.  
-            Leave 2 line breaks above. No emojis. Max {characters} characters.
-            Use **no more than 4 relevant hashtags** related to cleaning.
-            """,
-
-            # Texto + hashtags
-            f"""
-            Write a first comment from Elite Chicago Spa for the topic "{theme}". 
-            Use a warm tone in first person plural. Write a gentle phrase and include 1–2 spa-related hashtags. Optional: 1 emoji. Max {characters} characters.
-            """,
-
-            # Solo texto
-            f"""
-            Write a first comment as Elite Chicago Spa about "{theme}" using first person plural.  
-            Focus on comfort, beauty, and care. Avoid hashtags. Include a soft emoji if needed. Max {characters} characters.
-            """
+            prompt_hashtags_only,
+            prompt_phrase_plus_hashtags,
+            prompt_soft_text_only
         ]
 
-        prompt = random.choice(estilos)
-        user_message = self.create_message("user", prompt)
+        selected_prompt = random.choice(estilos)
+        user_message = self.create_message("user", selected_prompt)
 
         return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).strip('"')
 
@@ -427,36 +494,70 @@ class GPT:
             "gpt-4", [system_message, assistant_message, user_message]
         ).replace('"', "")
 
-    def firts_comment_lopez_abogados(self, theme, characters=90):
+    def first_comment_lopez_abogados(self, theme, characters=90):
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)
         assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
 
+        prompt_hashtags_only = f"""
+        You are López & López Abogados — a legal firm based in Chicago.
+
+        Write the **first comment** on your own video about the topic: "{theme}".
+        This comment is posted by the **official López & López Abogados account** — not a viewer.
+
+        ✳️ Style: Hashtags only.
+        - Leave two blank lines at the top.
+        - Then insert either 👇👇👇 or … on a single line.
+        - On the next line, write 3–4 serious, professional hashtags about legal advice, immigration, personal injury, or Chicago law.
+        - Do **not** use emojis or text (except 👇👇👇 or …).
+        - Avoid overused tags — rotate combinations and keep tone formal.
+
+        ✅ Max {characters} characters.
+        ✅ Must reflect a serious, legal tone.
+        ✅ Hashtags must feel unique and not automated.
+        """
+
+        prompt_statement_plus_hashtags = f"""
+        You are López & López Abogados — a legal firm based in Chicago.
+
+        Write the **first comment** on your own video about the topic: "{theme}".
+        This comment is posted by the **official López & López Abogados account** — not a viewer.
+
+        ✳️ Style: Short statement + hashtags.
+        - Write a concise, formal sentence in first person plural (e.g., "We guide families through complex immigration cases.").
+        - Add 1–2 legal-related hashtags.
+        - Use **only one legal emoji** (e.g., ⚖️ or 📜) — vary it in each version.
+        - Maintain a respectful, professional tone.
+
+        ✅ Max {characters} characters.
+        ✅ No links. Avoid repetitive phrases.
+        """
+
+        prompt_formal_text_only = f"""
+        You are López & López Abogados — a legal firm based in Chicago.
+
+        Write the **first comment** on your own video about the topic: "{theme}".
+        This comment is posted by the **official López & López Abogados account** — not a viewer.
+
+        ✳️ Style: Formal text only.
+        - Use first person plural voice.
+        - Craft a respectful, professional sentence that communicates trust, clarity, or commitment.
+        - Do **not** include hashtags or links.
+        - Optionally include **one legal emoji** to complement the tone (e.g., ⚖️ or 📜).
+
+        ✅ Max {characters} characters.
+        ✅ Must feel human, informed, and aligned with a serious law practice.
+        """
+
         estilos = [
-            # Solo hashtags (legales)
-            f"""
-            Write a first comment for "{theme}" using only serious, professional hashtags related to legal services in Chicago.  
-            Leave 2 blank lines above. No emojis or extra text. Max {characters} characters.
-            Use **no more than 4 relevant hashtags** related to cleaning.
-            """,
-
-            # Texto + hashtags
-            f"""
-            You are López & López Abogados. Write a professional first comment about "{theme}" in first person plural.  
-            Use a short statement + 1–2 legal hashtags. One ⚖️ or 📜 emoji allowed. Max {characters} characters.
-            """,
-
-            # Solo texto
-            f"""
-            Write a serious and professional first comment from López & López Abogados for "{theme}".  
-            Keep a respectful and formal tone. Use first person plural. No hashtags. One legal emoji max. Max {characters} characters.
-            """
+            prompt_hashtags_only,
+            prompt_statement_plus_hashtags,
+            prompt_formal_text_only
         ]
 
-        prompt = random.choice(estilos)
-        user_message = self.create_message("user", prompt)
+        selected_prompt = random.choice(estilos)
+        user_message = self.create_message("user", selected_prompt)
 
         return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).strip('"')
-
 
     def tikTok_title_lopez_abogados(self, theme, characters=50):
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)
@@ -540,11 +641,27 @@ class GPT:
     def youtube_video_title_botanica(self, theme, characters=50):
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)
         assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
-        user_message = self.create_message(
-            "user",
-            f"Crea un título de YouTube llamativo sobre {theme}, incluye una palabra en mayúscula y 1 emoji relacionado con el titulo al final. Máximo {characters} caracteres. Solo el título, sin descripción.",
-        )
-        return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).replace('"', "")
+
+        banned_words = ["descubre", "descubriendo", "secretos", "secreto", "ocultos", "revelados", "misterios"]
+        
+        prompt = f"""
+        Crea un título original para un video corto de YouTube sobre **{theme}**.
+
+        ✅ Instrucciones:
+        – Usa lenguaje **místico, evocador o informativo**, sin sonar comercial.
+        – Evita completamente las siguientes palabras: {', '.join(banned_words)}.
+        – Usa **una sola palabra en mayúscula**, y colócala naturalmente.
+        – Agrega **1 emoji relacionado al tema** (ritual, energía, intuición, limpieza, etc.) al final.
+        – No uses palabras como "descubre", "secretos", "misterios", "revelados".
+        – No excedas {characters} caracteres.
+        – Genera solo el título, sin comillas ni explicación ni descripción.
+
+        Ahora genera el título.
+        """
+
+        user_message = self.create_message("user", prompt)
+        return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).replace('"', "").strip()
+
 
 
     def youtube_video_tags_botanica(self, theme):
@@ -557,34 +674,66 @@ class GPT:
         return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).replace('"', "")
 
 
-    def firts_comment_botanica(self, theme, characters=90):
+    def first_comment_botanica(self, theme, characters=90):
         system_message = self.create_message("system", self.SYSTEM_MESSAGE)
         assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
 
+        prompt_hashtags_only = f"""
+        Eres una botánica espiritual con conexión mística con los planos energéticos.
+
+        Escribe el **primer comentario** en tu propio video sobre el tema: "{theme}".
+        Este comentario lo publica la **cuenta oficial de la botánica**, no un cliente.
+
+        ✳️ Estilo: Solo hashtags.
+        – Deja **dos saltos de línea arriba**.  
+        – Luego escribe una línea que contenga solo 👇👇👇 o …  
+        – En la siguiente línea, escribe **3 a 4 hashtags esotéricos** relacionados con energía, tarot, amarres, protección, limpieza espiritual.  
+        – No uses texto adicional ni emojis (solo 👇👇👇 o …).  
+        – Evita combinaciones genéricas como #BuenaVibra o #LimpiezaTotal. Hazlo único y poderoso.
+
+        ✅ Máximo {characters} caracteres.
+        ✅ Los hashtags deben sonar auténticos, místicos y no repetitivos.
+        """
+
+        prompt_phrase_plus_hashtags = f"""
+        Eres una botánica espiritual con sabiduría ancestral.
+
+        Escribe el **primer comentario** en tu propio video sobre el tema: "{theme}".  
+        Este comentario lo publica la **cuenta oficial de la botánica**, no un espectador.
+
+        ✳️ Estilo: Frase mística + hashtags.
+        – Comienza con una frase energética en primera persona plural (ej: “Conectamos con tu destino” o “Invocamos protección y claridad”).  
+        – Añade 1–2 hashtags esotéricos al final.  
+        – Puedes usar **un solo emoji místico** si ayuda a reforzar la energía del mensaje (🧿, 🔮, 🌙, etc.).
+
+        ✅ Máximo {characters} caracteres.
+        ✅ Nada de enlaces. Los hashtags deben rotar y sentirse auténticos.
+        """
+
+        prompt_mystical_text_only = f"""
+        Eres una botánica con conocimiento espiritual profundo.
+
+        Escribe el **primer comentario** en tu propio video sobre el tema: "{theme}".  
+        Este comentario lo publica la **cuenta oficial de la botánica**, no una persona externa.
+
+        ✳️ Estilo: Solo texto místico.
+        – Usa primera persona plural.  
+        – Transmite un mensaje lleno de intención, energía o guía espiritual.  
+        – No uses hashtags ni links de paginas.  
+        – Puedes cerrar con **un emoji místico o neutral** si se siente apropiado (🌿, ✨, 🔮, 🕯️).
+
+        ✅ Máximo {characters} caracteres.
+        ✅ El tono debe ser reflexivo, profundo y alineado con lo espiritual.
+        """
+
         estilos = [
-            # Solo hashtags (espirituales)
-            f"""
-            Escribe un primer comentario desde la perspectiva de una botánica mística para el tema "{theme}".  
-            Solo incluye hashtags relacionados con espiritualidad, amarres, energía, tarot, limpieza.  
-            Deja dos saltos de línea arriba. No agregues texto ni emojis. Máximo {characters} caracteres.
-            Utiliza **no más de 4 hashtags relevantes** relacionados con la limpieza.
-            """,
-
-            # Texto + hashtags
-            f"""
-            Eres una botánica espiritual. Escribe un comentario para el video sobre "{theme}" en primera persona plural.  
-            Incluye una frase con energía mística + 1–2 hashtags esotéricos. Máximo 1 emoji. Máximo {characters} caracteres.
-            """,
-
-            # Solo texto
-            f"""
-            Escribe un primer comentario para "{theme}" desde la cuenta oficial de una botánica.  
-            Usa primera persona plural. Hazlo reflexivo, energético, sin hashtags. Puedes cerrar con un emoji si aplica. Máximo {characters} caracteres.
-            """
+            prompt_hashtags_only,
+            prompt_phrase_plus_hashtags,
+            prompt_mystical_text_only
         ]
 
-        prompt = random.choice(estilos)
-        user_message = self.create_message("user", prompt)
+        selected_prompt = random.choice(estilos)
+        user_message = self.create_message("user", selected_prompt)
 
         return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).strip('"')
 
@@ -598,8 +747,249 @@ class GPT:
         )
         return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).replace('"', "")
 
-        
 
-    
+    # ============================= SPA312 METHODS ==============================
+
+    def copy_spa312(self, theme, characters=100):
+        system_message = self.create_message("system", self.SYSTEM_MESSAGE)
+        assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
+        user_message = self.create_message(
+            "user",
+            f"Generate elegant and soothing promotional copy for the theme: {theme}. "
+            f"The copy should start with a calming hook, highlight the wellness or beauty benefits of the service, and close with a gentle call to action. "
+            f"Add exactly two soft or relaxing emojis at the end. Then, generate 10 fresh and aesthetic hashtags based on the content. "
+            f"Limit the copy to {characters} characters max.",
+        )
+        return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).replace('"', "")
+
+    def theme_spa312(self):
+        system_message = self.create_message("system", self.SYSTEM_MESSAGE)
+        assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
+        user_message = self.create_message(
+            "user",
+            f"Given the following spa service: {self.service}, generate a soft and attractive theme that reflects beauty, self-care, and wellness. It should be poetic but clear.",
+        )
+        return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).replace('"', "")
+
+    def document_title_spa312(self, theme):
+        system_message = self.create_message("system", self.SYSTEM_MESSAGE)
+        assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
+        user_message = self.create_message(
+            "user",
+            f"Based on the theme: {theme}, suggest one elegant and meaningful word that represents the emotional benefit or aesthetic essence of the spa service.",
+        )
+        return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).replace('"', "")
+
+    def youtube_video_title_spa312(self, theme, characters=40):
+        system_message = self.create_message("system", self.SYSTEM_MESSAGE)
+        assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
+        user_message = self.create_message(
+            "user",
+            f"Create a YouTube video title for the theme: {theme}. It must include a calming or elegant word in all caps, end with one emoji, and stay within {characters} characters.",
+        )
+        return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).replace('"', "")
+
+    def youtube_video_tags_spa312(self, theme):
+        system_message = self.create_message("system", self.SYSTEM_MESSAGE)
+        assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
+        user_message = self.create_message(
+            "user",
+            f"Generate 10 relevant YouTube tags for a spa service related to {theme}. Tags should focus on beauty, skincare, relaxation, Chicago spa, and aesthetic services. Separate with commas.",
+        )
+        return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).replace('"', "")
+
+    def first_comment_spa312(self, theme, characters=90):
+        system_message = self.create_message("system", self.SYSTEM_MESSAGE)
+        assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
+
+        prompt_hashtags_only = f"""
+        You are Spa312 — a luxury spa in Chicago offering skincare and wellness.
+
+        Write the **first comment** on your own video about the topic: "{theme}".
+        This comment is posted by the **official Spa312 account** — not a viewer.
+
+        ✳️ Style: Hashtags only.
+        - Leave two blank lines at the top.
+        - Then insert either 👇👇👇 or … on a single line.
+        - On the next line, write 3–4 elegant and fresh hashtags related to skincare, spa beauty, glow, self-love, or inner peace.
+        - Do **not** include emojis or any other text.
+        - Avoid generic hashtags like #RelaxationTime — make them feel curated and premium.
+
+        ✅ Max {characters} characters.
+        ✅ Make hashtags feel new, clean, and relaxing.
+        """
+
+        prompt_statement_plus_hashtags = f"""
+        You are Spa312 — a luxury spa in Chicago.
+
+        Write the **first comment** on your own video about the topic: "{theme}".
+        This comment is posted by the **official Spa312 account** — not a viewer.
+
+        ✳️ Style: Gentle phrase + hashtags.
+        - Start with a calming or empowering phrase in first person plural (e.g., "We bring beauty to the surface." or "Our hands restore your glow.").
+        - Add 1–2 beauty or spa-related hashtags.
+        - One soft emoji allowed (🌸, ✨, 🧖‍♀️, etc.).
+
+        ✅ Max {characters} characters.
+        ✅ Avoid hashtags like #SkincareRoutine — use refined variations.
+        """
+
+        prompt_text_only = f"""
+        You are Spa312 — a luxury spa in Chicago.
+
+        Write the **first comment** on your own video about the topic: "{theme}".
+        This comment is posted by the **official Spa312 account** — not a viewer.
+
+        ✳️ Style: Gentle text only.
+        - Use one short sentence in first person plural.
+        - The message should feel elegant, healing, or luxurious.
+        - No hashtags. One soft emoji allowed at the end if it fits.
+
+        ✅ Max {characters} characters.
+        ✅ Must sound calm, premium, and brand-authentic.
+        """
+
+        estilos = [
+            prompt_hashtags_only,
+            prompt_statement_plus_hashtags,
+            prompt_text_only
+        ]
+
+        selected_prompt = random.choice(estilos)
+        user_message = self.create_message("user", selected_prompt)
+
+        return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).strip('"')
+
+    def tikTok_title_spa312(self, theme, characters=50):
+        system_message = self.create_message("system", self.SYSTEM_MESSAGE)
+        assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
+        user_message = self.create_message(
+            "user",
+            f"Write a TikTok video title for the spa service: {theme}. The title should feel calming or beautiful, include a powerful keyword, and end with one gentle emoji. Do not include hashtags. Max {characters} characters.",
+        )
+        return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).replace('"', "")
+
+
+    # ============================= ELITE FRENCHIES METHODS ==============================
+
+    def copy_elite_frenchies(self, theme, characters=100):
+        system_message = self.create_message("system", self.SYSTEM_MESSAGE)
+        assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
+        user_message = self.create_message(
+            "user",
+            f"Write an emotional and captivating promotional copy about: {theme}. "
+            f"Include a warm hook, highlight the uniqueness and care of Elite Frenchies' puppies, and close with a soft call to action. "
+            f"End with two playful or dog-related emojis. Then provide 10 engaging and brand-aligned hashtags. "
+            f"The copy must be no more than {characters} characters.",
+        )
+        return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).replace('"', "")
+
+    def theme_elite_frenchies(self):
+        system_message = self.create_message("system", self.SYSTEM_MESSAGE)
+        assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
+        user_message = self.create_message(
+            "user",
+            f"Given the service: {self.service}, suggest a heartfelt and catchy theme that reflects Elite Frenchies' quality, care, and love for French Bulldogs.",
+        )
+        return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).replace('"', "")
+
+    def document_title_elite_frenchies(self, theme):
+        system_message = self.create_message("system", self.SYSTEM_MESSAGE)
+        assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
+        user_message = self.create_message(
+            "user",
+            f"Suggest a single emotional and elegant word that summarizes the core value of the theme: {theme}, related to French Bulldog breeding.",
+        )
+        return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).replace('"', "")
+
+    def youtube_video_title_elite_frenchies(self, theme, characters=40):
+        system_message = self.create_message("system", self.SYSTEM_MESSAGE)
+        assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
+        user_message = self.create_message(
+            "user",
+            f"Create a YouTube title about {theme} for Elite Frenchies. It should include a cute or emotional word in ALL CAPS and end with a puppy emoji. Max {characters} characters.",
+        )
+        return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).replace('"', "")
+
+    def youtube_video_tags_elite_frenchies(self, theme):
+        system_message = self.create_message("system", self.SYSTEM_MESSAGE)
+        assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
+        user_message = self.create_message(
+            "user",
+            f"Generate 10 YouTube tags related to the topic: {theme}. The tags should cover French Bulldogs, puppies, dog breeders, family pets, and location (Chicago). Use commas.",
+        )
+        return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).replace('"', "")
+
+    def first_comment_elite_frenchies(self, theme, characters=90):
+        system_message = self.create_message("system", self.SYSTEM_MESSAGE)
+        assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
+
+        prompt_hashtags_only = f"""
+        You are Elite Frenchies — a trusted French Bulldog breeder in Chicago.
+
+        Write the **first comment** on your own video about the topic: "{theme}".
+        This comment is posted by the **official Elite Frenchies account** — not a viewer.
+
+        ✳️ Style: Hashtags only.
+        - Leave two line breaks at the top.
+        - Then insert either 👇👇👇 or … on a single line.
+        - On the next line, write 3–4 cute, premium-looking hashtags related to Frenchies, puppies, or responsible dog breeding.
+        - No emojis or regular text (except 👇👇👇 or …).
+
+        ✅ Max {characters} characters.
+        ✅ Must feel warm, original, and brand-aligned.
+        """
+
+        prompt_statement_plus_hashtags = f"""
+        You are Elite Frenchies — a French Bulldog breeder in Chicago.
+
+        Write the **first comment** on your own video about the topic: "{theme}".
+        This comment is posted by the **official Elite Frenchies account** — not a viewer.
+
+        ✳️ Style: Short statement + hashtags.
+        - Use first person plural.
+        - Keep the tone warm, trustworthy, and dog-loving.
+        - Include 1–2 dog-related hashtags.
+        - One puppy emoji allowed at the end.
+
+        ✅ Max {characters} characters.
+        ✅ No links or repeated phrasing.
+        """
+
+        prompt_text_only = f"""
+        You are Elite Frenchies — a top breeder of French Bulldogs in Chicago.
+
+        Write the **first comment** on your own video about the topic: "{theme}".
+        This comment is posted by the **official Elite Frenchies account** — not a viewer.
+
+        ✳️ Style: Text only.
+        - Use a heartfelt or confident sentence in first person plural.
+        - No hashtags or links.
+        - One dog emoji allowed at the end if it adds value.
+
+        ✅ Max {characters} characters.
+        ✅ Must sound natural, caring, and trustworthy.
+        """
+
+        estilos = [
+            prompt_hashtags_only,
+            prompt_statement_plus_hashtags,
+            prompt_text_only
+        ]
+
+        selected_prompt = random.choice(estilos)
+        user_message = self.create_message("user", selected_prompt)
+
+        return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).strip('"')
+
+    def tikTok_title_elite_frenchies(self, theme, characters=50):
+        system_message = self.create_message("system", self.SYSTEM_MESSAGE)
+        assistant_message = self.create_message("assistant", self.ASSISTANT_MESSAGE)
+        user_message = self.create_message(
+            "user",
+            f"Write a TikTok video title about {theme} for Elite Frenchies. It should include a cute or exciting keyword, feel emotional or playful, and end with a single dog emoji. No hashtags. Max {characters} characters.",
+        )
+        return self.generate_response("gpt-4", [system_message, assistant_message, user_message]).replace('"', "")
+
    
    

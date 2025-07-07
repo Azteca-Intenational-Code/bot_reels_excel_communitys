@@ -98,6 +98,12 @@ async def actualizar_excel(file: UploadFile, id_campaign: int = Form(...)):
             # 🗑️ Eliminar registros sobrantes
             if len(df) < len(registros):
                 ids_sobrantes = [r[0] for r in registros[len(df):]]
+                # Eliminar registros dependientes en 'videos' primero
+                session.execute(sql_text("""
+                    DELETE FROM videos
+                    WHERE id_contenido IN :ids
+                """), {"ids": tuple(ids_sobrantes)})
+    
                 session.execute(sql_text("""
                     DELETE FROM contenido_semanal
                     WHERE id IN :ids
